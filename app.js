@@ -1,5 +1,6 @@
 const express = require("express");
-const dbConnection = require("./src/config/config");
+const path = require('path');
+const dbConnection = require(path.join(__dirname, 'src/config/config'));
 const dotenv = require("dotenv");
 const cors = require("cors");
 const routes = require("./src/routes/apiRoutes");
