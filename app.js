@@ -21,7 +21,7 @@ app.use(
 );
 app.use(express.static("public"));
 
-app.use("/", routes);
+app.use("/api", routes);
 app.use("/auth", authRouter);
 
 app.use((err, req, res, next) => {
