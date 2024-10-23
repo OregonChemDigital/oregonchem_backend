@@ -36,9 +36,11 @@ const ProductController = {
             const { name, presentations, categories, descriptions, uses } = req.body;
             const images = {};
             ["site1", "site2", "site3", "site4", "site5"].forEach((site, index) => {
-                const imageFile = req.files[`site${index + 1}`];
+                const imageFile = req.files ? req.files[`site${index + 1}`] : null;
                 if (imageFile && imageFile.length > 0) {
                     images[site] = imageFile[0].downloadURL;
+                } else {
+                    images[site] = "";
                 }
             });
 
@@ -111,3 +113,4 @@ const ProductController = {
 };
 
 module.exports = ProductController;
+
