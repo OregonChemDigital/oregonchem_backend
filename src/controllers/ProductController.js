@@ -15,16 +15,13 @@ const ProductController = {
                     uses: product.uses[site],
                     images: product.images[site]
                 };
-                if (site) {
-                    const specificSiteData = product.descriptions[site] ? siteSpecificData : {};
-                }
                 return {
                     name: product.name,
                     presentations: product.presentations,
                     categories: product.categories,
-                    descriptions: specificSiteData.descriptions,
-                    uses: specificSiteData.uses,
-                    images: specificSiteData.images
+                    descriptions: siteSpecificData.descriptions,
+                    uses: siteSpecificData.uses,
+                    images: siteSpecificData.images
                 };
             });
             res.status(200).json(filteredProducts);
