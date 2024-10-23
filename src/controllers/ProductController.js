@@ -58,7 +58,6 @@ const ProductController = {
             });
 
             const newProduct = new Product({
-                _id,
                 name,
                 presentations: JSON.parse(presentations),
                 categories: JSON.parse(categories),

@@ -2,6 +2,9 @@ const { auth } = require("../config/firebaseAdmin");
 
 const authMiddleware = async (req, res, next) => {
     const publicPaths = [
+        '/',
+        '/api/',
+        '/api/public',
         '/api/public/productos',
         '/api/public/categorias',
         '/api/public/presentaciones',
