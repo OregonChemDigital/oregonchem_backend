@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000; // Render will set PORT environment variable
+const PORT = process.env.PORT || 3000;
 
 dbConnection();
 app.use(cors());

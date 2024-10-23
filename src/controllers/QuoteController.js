@@ -1,67 +1,72 @@
-const nodemailer = require("nodemailer");
-const PDFDocument = require("pdfkit");
-const { Readable } = require("stream");
+const PDFDocument = require('pdfkit');
+const nodemailer = require('nodemailer');
 
-const createQuote = async (req, res) => {
-    const { selectedProducts, clientType, clientInfo, contactMethod, observations, termsAccepted } = req.body;
-
-    // Create PDF document
+const generatePDF = (quoteData) => {
     const doc = new PDFDocument();
-    const buffers = [];
+    let buffers = [];
 
-    doc.on("data", buffers.push.bind(buffers));
-    doc.on("end", async () => {
-        const pdfData = Buffer.concat(buffers);
-
-        // Send email
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: 'oregonchemdigital@gmail.com', // your email address
-                pass: '4r2g4nch2md3g3t1l!' // your password or app password
-            }
-        });
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: clientInfo.email,
-            subject: "Your Quote",
-            text: "Please find attached your quote.",
-            attachments: [
-                {
-                    filename: "quote.pdf",
-                    content: pdfData,
-                },
-            ],
-        };
-
-        try {
-            await transporter.sendMail(mailOptions);
-            res.status(200).send("Quote sent successfully");
-        } catch (error) {
-            console.error("Error sending email:", error);
-            res.status(500).send("Error sending quote");
-        }
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => {
+        let pdfData = Buffer.concat(buffers);
+        sendEmail(pdfData, quoteData.clientInfo.email); // Call sendEmail here with pdfData and client email
     });
 
-    // Add content to PDF
-    doc.fontSize(25).text("Quote", { align: "center" });
-    doc.text("Client Info:");
-    doc.text(`Name: ${clientInfo.name} ${clientInfo.lastName}`);
-    doc.text(`Email: ${clientInfo.email}`);
-    doc.text(`Phone: ${clientInfo.phone}`);
-    doc.text("Selected Products:");
+    doc.fontSize(18).text('Quote Details', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(12).text(`Name: ${quoteData.clientInfo.name}`);
+    doc.text(`Last Name: ${quoteData.clientInfo.lastName}`);
+    doc.text(`DNI: ${quoteData.clientInfo.dni}`);
+    doc.text(`Phone: ${quoteData.clientInfo.phone}`);
+    doc.text(`Email: ${quoteData.clientInfo.email}`);
+    doc.text(`Company: ${quoteData.clientInfo.company}`);
+    doc.text(`Social Reason: ${quoteData.clientInfo.socialReason}`);
+    doc.text(`RUC: ${quoteData.clientInfo.ruc}`);
+    doc.text(`Contact Method: ${quoteData.contactMethod}`);
+    doc.text(`Observations: ${quoteData.observations}`);
 
-    selectedProducts.forEach((product) => {
-        doc.text(`- ${product.name}, Volume: ${product.volume}, Presentation: ${product.presentation}`);
+    // Add product details
+    quoteData.selectedProducts.forEach((product, index) => {
+        doc.text(`\nProduct ${index + 1}:`);
+        doc.text(`- Name: ${product.name}`);
+        doc.text(`- Volume: ${product.volume}`);
+        doc.text(`- Presentation: ${product.presentation}`);
     });
-
-    doc.text("Observations: " + observations);
-    doc.text("Terms Accepted: " + (termsAccepted ? "Yes" : "No"));
 
     doc.end();
 };
 
-module.exports = {
-    createQuote,
+const sendEmail = async (pdfData, email) => {
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'oregonchemdigital@gmail.com',
+            pass: '4r2g4nch2md3g3t1l!'
+        }
+    });
+
+    let mailOptions = {
+        from: 'oregonchemdigital@gmail.com',
+        to: email,
+        subject: 'Your Personalized Quote',
+        text: 'Attached is your personalized quote.',
+        attachments: [
+            { filename: 'quote.pdf', content: pdfData }
+        ]
+    };
+
+    await transporter.sendMail(mailOptions);
 };
+
+const createQuote = async (req, res) => {
+    try {
+        const quoteData = req.body;
+        generatePDF(quoteData);
+        res.status(200).json({ message: 'Quote sent successfully!' });
+    } catch (error) {
+        console.error('Error creating quote:', error);
+        res.status(500).json({ error: 'Failed to create quote.' });
+    }
+};
+
+module.exports = { createQuote };
+

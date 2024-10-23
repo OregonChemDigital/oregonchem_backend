@@ -5,7 +5,7 @@ const ProductController = require('../controllers/ProductController');
 const CategoryController = require('../controllers/CategoryController');
 const PresentationController = require('../controllers/PresentationController');
 const BannerController = require('../controllers/BannerController');
-const QuoteController = require('../controllers/QuoteController');
+const { createQuote } = require('../controllers/QuoteController');
 const { upload, firebaseStorageMiddleware } = require('../middlewares/firebaseStorageMiddleware');
 
 // Function to create upload fields
@@ -64,7 +64,7 @@ router.post(
 );
 
 // QUOTES
-router.post('/quotes', QuoteController.createQuote);
+router.post('/quotes', createQuote);
 
 module.exports = router;
 

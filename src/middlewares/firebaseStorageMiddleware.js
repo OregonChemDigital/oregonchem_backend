@@ -68,6 +68,8 @@ const handleFileUploads = async (req, basePath, fileName) => {
 };
 
 const firebaseStorageMiddleware = async (req, res, next) => {
+    console.log("Request Body:", req.body);
+    console.log("Uploaded Files:", req.files);
     const {
         originalUrl,
         file,
