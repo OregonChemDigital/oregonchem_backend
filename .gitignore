@@ -3,6 +3,7 @@ node_modules/
 
 # Environment variables
 .env
+FIREBASE_SERVICE_ACCOUNT_PATH
 
 # Logs
 logs/*.log
