@@ -62,6 +62,40 @@ const ProductController = {
         }
     },
 
+    getProductByIdAndSite: async (req, res) => {
+        const { id, site } = req.params;
+        try {
+            const product = await Product.findById(id)
+                .populate("presentations categories")
+                .exec();
+            if (!product) {
+                return res.status(404).json({ message: "Product not found" });
+            }
+            const siteData = {
+                descriptions: product.descriptions[site],
+                uses: product.uses[site],
+                images: product.images[site]
+            };
+            if (!siteData.descriptions && !siteData.uses && !siteData.images) {
+                return res
+                    .status(404)
+                    .json({ message: "No data for the requested site" });
+            }
+            const response = {
+                name: product.name,
+                presentations: product.presentations,
+                categories: product.categories,
+                descriptions: siteData.descriptions,
+                uses: siteData.uses,
+                images: siteData.images,
+            };
+            res.status(200).json(response);
+        } catch (error) {
+            console.error("Error fetching product:", error);
+            res.status(500).json({ message: "Error fetching product", error });
+        }
+    },
+
     // SEARCH PRODUCTS BY NAME
     async searchProducts(req, res) {
         try {
