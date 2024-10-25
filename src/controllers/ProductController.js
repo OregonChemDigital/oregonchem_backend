@@ -8,12 +8,12 @@ const ProductController = {
             const products = await Product.find()
                 .populate("presentations categories")
                 .exec();
-            console.log('Products fetched:', products);
+
             const filteredProducts = products.map((product) => {
-                let siteSpecificData = {
-                    descriptions: product.descriptions[site],
-                    uses: product.uses[site],
-                    images: product.images[site]
+                const siteSpecificData = {
+                    descriptions: product.descriptions[site] || "",
+                    uses: product.uses[site] || "",
+                    images: product.images[site] || ""
                 };
                 return {
                     name: product.name,
@@ -24,24 +24,27 @@ const ProductController = {
                     images: siteSpecificData.images
                 };
             });
-            res.status(200).json(filteredProducts);
+            res.status(200).json({ message: "Products fetched successfully", data: filteredProducts });
+
         } catch (error) {
-            res.status(500).json({ message: "Error fetching products", error });
+            console.error("Error fetching products:", error.stack);
+            res.status(500).json({ message: "Error fetching products", error: error.message });
         }
     },
 
     // ADD A PRODUCT
+
     async createProduct(req, res) {
         try {
             const { name, presentations, categories, descriptions, uses } = req.body;
+            if (!name || !presentations || !categories) {
+                return res.status(400).json({ message: "Missing required fields" });
+            }
+
             const images = {};
             ["site1", "site2", "site3", "site4", "site5"].forEach((site, index) => {
                 const imageFile = req.files ? req.files[`site${index + 1}`] : null;
-                if (imageFile && imageFile.length > 0) {
-                    images[site] = imageFile[0].downloadURL;
-                } else {
-                    images[site] = "";
-                }
+                images[site] = imageFile && imageFile.length > 0 ? imageFile[0].downloadURL : "";
             });
 
             const newProduct = new Product({
@@ -54,10 +57,11 @@ const ProductController = {
             });
 
             const savedProduct = await newProduct.save();
-            res.status(201).json(savedProduct);
+            res.status(201).json({ message: "Product created successfully", data: savedProduct });
+
         } catch (error) {
-            console.error("Error creating product:", error);
-            res.status(500).json({ message: "Error creating product", error });
+            console.error("Error creating product:", error.stack);
+            res.status(500).json({ message: "Error creating product", error: error.message });
         }
     },
 
