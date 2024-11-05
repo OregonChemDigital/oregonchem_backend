@@ -29,14 +29,11 @@ const CategoryController = {
             }
 
             const category = new Category({ name, images });
-
             await category.save();
             res.status(201).json(category);
         } catch (error) {
             console.error("Error adding category:", error);
-            res
-                .status(500)
-                .json({ message: "Error adding category", error: error.message });
+            res.status(500).json({ message: "Error adding category", error: error.message });
         }
     },
 
