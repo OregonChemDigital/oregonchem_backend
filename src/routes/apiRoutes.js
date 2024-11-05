@@ -9,6 +9,16 @@ const { handleProductUploads, upload: productUpload } = require('../middlewares/
 const { handleCategoryUploads, upload: categoryUpload } = require('../middlewares/categoryStorageMiddleware');
 const { handlePresentationUploads, upload: presentationUpload } = require('../middlewares/presentationStorageMiddleware');
 const { handleBannerUploads, upload: bannerUpload } = require('../middlewares/bannerStorageMiddleware');
+const createUploadFields = require('../utils/createUploadFields');
+
+// Define your sites array here, adjust as necessary
+const sites = [
+    { name: 'site1' }, 
+    { name: 'site2' },
+    { name: 'site3' },
+    { name: 'site4' },
+    { name: 'site5' }
+];
 
 // Public Routes
 router.get('/public/productos', ProductController.getAllProducts);
