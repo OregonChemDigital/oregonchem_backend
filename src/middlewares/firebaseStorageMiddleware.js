@@ -45,12 +45,12 @@ const uploadFileToFirebase = (file, path) => {
     });
 };
 
-const handleFileUploads = async (req, basePath, fileName) => {
+const handleFileUploads = async (req, basePath, productName) => {
     const uploadPromises = Object.keys(req.files).flatMap((fieldName) => {
         const files = req.files[fieldName];
         return files.map(async (file) => {
             const fileExtension = file.originalname.split(".").pop();
-            const storagePath = `${basePath}/${fileName}/${fieldName}/${fileName}_${fieldName}.${fileExtension}`;
+            const storagePath = `${basePath}/${productName}/${fieldName}/${productName}_${fieldName}.${fileExtension}`;
             const downloadURL = await uploadFileToFirebase(file, storagePath);
             return { ...file, downloadURL };
         });
@@ -70,22 +70,18 @@ const handleFileUploads = async (req, basePath, fileName) => {
 const firebaseStorageMiddleware = async (req, res, next) => {
     console.log("Request Body:", req.body);
     console.log("Uploaded Files:", req.files);
+
     const {
         originalUrl,
-        file,
-        files,
-        body: { name },
+        body: { name }, // Make sure 'name' is the product name
     } = req;
 
-    if (!file && !files) return next();
+    // Check if files are uploaded
+    if (!req.files) return next();
 
     if (!name) {
         return res.status(400).json({ message: "Name is required" });
     }
-
-    const site =
-        (req.files && Object.keys(req.files).find((field) => req.files[field])) ||
-        "site1";
 
     if (originalUrl.includes("/productos")) {
         try {
@@ -129,9 +125,11 @@ const firebaseStorageMiddleware = async (req, res, next) => {
     if (originalUrl.includes("/banners")) {
         const site = req.body.site || "site1";
 
-        if (!file) {
+        if (!req.files) {
             return res.status(400).json({ message: "File is required for banners" });
         }
+
+        const file = req.files[0]; // Assuming you are getting a single file for banners
 
         try {
             const fileExtension = file.originalname.split(".").pop();
