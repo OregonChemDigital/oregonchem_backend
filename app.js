@@ -1,9 +1,9 @@
 const express = require("express");
 const path = require('path');
-const dbConnection = require(path.resolve(__dirname, 'src/config/config'));
 const dotenv = require("dotenv");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const dbConnection = require(path.resolve(__dirname, 'src/config/config'));
 const routes = require("./src/routes/apiRoutes");
 const authRouter = require("./src/routes/authRoutes");
 const { admin, bucket, auth } = require(path.resolve(__dirname, 'src/config/firebaseAdmin'));
@@ -19,7 +19,7 @@ dbConnection();
 // CORS options
 const corsOptions = {
     origin: 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE',],
     credentials: true,
 };
 
@@ -42,4 +42,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Express server listening on port ${PORT}`);
 });
+
 
