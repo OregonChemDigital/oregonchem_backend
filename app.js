@@ -3,11 +3,13 @@ const path = require('path');
 const dbConnection = require(path.resolve(__dirname, 'src/config/config'));
 const dotenv = require("dotenv");
 const cors = require("cors");
+const bodyParser = require("body-parser");
 const routes = require("./src/routes/apiRoutes");
 const authRouter = require("./src/routes/authRoutes");
-const bodyParser = require("body-parser");
+const { admin, bucket, auth } = require(path.resolve(__dirname, 'src/config/firebaseAdmin'));
 
 dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -16,7 +18,7 @@ dbConnection();
 
 // CORS options
 const corsOptions = {
-    origin: 'http://localhost:5173', 
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
 };

@@ -7,7 +7,7 @@ const serviceAccount = require(serviceAccountPath);
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        storageBucket: 'oregonchem-pe.appspot.com',
+        storageBucket: process.env.GOOGLE_CLOUD_STORAGE_BUCKET,
     });
 }
 
@@ -15,3 +15,4 @@ const bucket = admin.storage().bucket();
 const auth = admin.auth();
 
 module.exports = { admin, bucket, auth };
+
