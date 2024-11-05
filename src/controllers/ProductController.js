@@ -33,17 +33,18 @@ const ProductController = {
     },
 
     // ADD A PRODUCT
-
     async createProduct(req, res) {
         try {
             const { name, presentations, categories, descriptions, uses } = req.body;
+
             if (!name || !presentations || !categories) {
                 return res.status(400).json({ message: "Missing required fields" });
             }
 
+            // Initialize images object
             const images = {};
             ["site1", "site2", "site3", "site4", "site5"].forEach((site, index) => {
-                const imageFile = req.files ? req.files[`site${index + 1}`] : null;
+                const imageFile = req.files ? req.files[`images[site${index + 1}]`] : null;
                 images[site] = imageFile && imageFile.length > 0 ? imageFile[0].downloadURL : "";
             });
 
@@ -53,7 +54,7 @@ const ProductController = {
                 categories,
                 descriptions,
                 uses,
-                images
+                images,
             });
 
             const savedProduct = await newProduct.save();
