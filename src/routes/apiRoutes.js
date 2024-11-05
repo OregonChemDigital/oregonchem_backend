@@ -10,6 +10,7 @@ const { handleCategoryUploads, upload: categoryUpload } = require('../middleware
 const { handlePresentationUploads, upload: presentationUpload } = require('../middlewares/presentationStorageMiddleware');
 const { upload, handleBannerUploads } = require('../middlewares/bannerStorageMiddleware');
 const createUploadFields = require('../utils/createUploadFields');
+const createProductUploadFields = require('../utils/createProductUploadFields');
 
 // Define your sites array here, adjust as necessary
 const sites = [
@@ -32,7 +33,7 @@ router.use(authMiddleware);
 // PRODUCTS
 router.get('/productos', ProductController.getAllProducts);
 router.get('/productos/:id/:site', ProductController.getProductByIdAndSite);
-router.post('/productos/nuevo', productUpload.fields(createUploadFields(sites)), handleProductUploads, ProductController.createProduct);
+router.post('/productos/nuevo', productUpload.fields(createProductUploadFields()), handleProductUploads, ProductController.createProduct);
 router.get('/search', ProductController.searchProducts);
 
 // CATEGORIES
