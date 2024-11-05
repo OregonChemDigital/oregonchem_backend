@@ -8,12 +8,12 @@ const BannerController = require('../controllers/BannerController');
 const { handleProductUploads, upload: productUpload } = require('../middlewares/productStorageMiddleware');
 const { handleCategoryUploads, upload: categoryUpload } = require('../middlewares/categoryStorageMiddleware');
 const { handlePresentationUploads, upload: presentationUpload } = require('../middlewares/presentationStorageMiddleware');
-const { handleBannerUploads, upload: bannerUpload } = require('../middlewares/bannerStorageMiddleware');
+const { upload, handleBannerUploads } = require('../middlewares/bannerStorageMiddleware');
 const createUploadFields = require('../utils/createUploadFields');
 
 // Define your sites array here, adjust as necessary
 const sites = [
-    { name: 'site1' }, 
+    { name: 'site1' },
     { name: 'site2' },
     { name: 'site3' },
     { name: 'site4' },
@@ -46,7 +46,7 @@ router.delete('/presentaciones/:id', PresentationController.deletePresentation);
 
 // BANNERS
 router.get('/banners', BannerController.getAllBanners);
-router.post('/banners/nuevo', bannerUpload.single('image'), handleBannerUploads, BannerController.addBanner);
+router.post('/banners/nuevo', upload.single('image'), handleBannerUploads, BannerController.addBanner);
 
 module.exports = router;
 

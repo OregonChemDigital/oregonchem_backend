@@ -10,18 +10,17 @@ const upload = multer({
 
 const handleBannerUploads = async (req, res, next) => {
     const { name, site } = req.body;
-    if (!req.files || req.files.length === 0) {
+    if (!req.file) {
         return res.status(400).json({ message: "File is required for banners" });
     }
 
-    const file = req.files[0]; // Assuming a single file for banners
-    if (!file) return res.status(400).json({ message: "File is required" });
+    const file = req.file;
 
     try {
         const fileExtension = file.originalname.split(".").pop();
         const storagePath = `banners/${site || 'site1'}/${name}_${site || 'site1'}.${fileExtension}`;
         file.downloadURL = await uploadFileToFirebase(file, storagePath);
-        req.files = [file]; // Overwrite req.files with the uploaded file containing the download URL
+        req.file = file; // Overwrite req.file with the uploaded file containing the download URL
         next();
     } catch (error) {
         console.error("Error uploading banner file:", error);
@@ -30,4 +29,5 @@ const handleBannerUploads = async (req, res, next) => {
 };
 
 module.exports = { upload, handleBannerUploads };
+
 
