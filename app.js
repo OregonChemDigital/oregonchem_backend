@@ -18,7 +18,7 @@ dbConnection();
 
 // CORS options
 const corsOptions = {
-    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:4321'],
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
 };
