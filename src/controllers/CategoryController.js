@@ -23,8 +23,8 @@ const CategoryController = {
 
             const images = {};
             for (let i = 1; i <= 5; i++) {
-                if (req.files[`site${i}`] && req.files[`site${i}`][0]) {
-                    images[`site${i}`] = req.files[`site${i}`][0].downloadURL;
+                if (req.files[`images[site${i}]`] && req.files[`images[site${i}]`][0]) {
+                    images[`site${i}`] = req.files[`images[site${i}]`][0].downloadURL;
                 }
             }
 
