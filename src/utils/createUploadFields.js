@@ -1,6 +1,6 @@
 const createUploadFields = (sites) => {
     return sites.map(site => ({
-        name: site.name,
+        name: `images[${site.name}]`,
         maxCount: 1
     }));
 };

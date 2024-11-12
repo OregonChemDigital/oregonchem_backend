@@ -11,19 +11,21 @@ const ProductController = {
 
             const filteredProducts = products.map((product) => {
                 const siteSpecificData = {
-                    descriptions: product.descriptions[site] || "",
-                    uses: product.uses[site] || "",
-                    images: product.images[site] || ""
+                    descriptions: site ? product.descriptions[site] : product.descriptions,
+                    uses: site ? product.uses[site] : product.uses,
+                    images: site ? product.images[site] : product.images
                 };
                 return {
                     name: product.name,
                     presentations: product.presentations,
                     categories: product.categories,
-                    descriptions: siteSpecificData.descriptions,
-                    uses: siteSpecificData.uses,
-                    images: siteSpecificData.images
+                    descriptions: siteSpecificData.descriptions || "",
+                    uses: siteSpecificData.uses || "",
+                    images: siteSpecificData.images || ""
                 };
             });
+
+            console.log("Filtered Products:", JSON.stringify(filteredProducts, null, 2));
             res.status(200).json({ message: "Products fetched successfully", data: filteredProducts });
 
         } catch (error) {
@@ -31,6 +33,7 @@ const ProductController = {
             res.status(500).json({ message: "Error fetching products", error: error.message });
         }
     },
+
 
     // ADD A PRODUCT
     async createProduct(req, res) {
