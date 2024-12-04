@@ -40,7 +40,7 @@ const sendEmail = async (pdfData, email) => {
         service: 'gmail',
         auth: {
             user: 'oregonchemdigital@gmail.com',
-            pass: '4r2g4nch2md3g3t1l!'
+            pass: '4r2g4nch2md3g3t1l!' // Ensure this is correct
         }
     });
 
@@ -69,4 +69,5 @@ const createQuote = async (req, res) => {
 };
 
 module.exports = { createQuote };
+
 

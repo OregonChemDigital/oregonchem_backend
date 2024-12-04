@@ -7,6 +7,7 @@ const dbConnection = require(path.resolve(__dirname, 'src/config/config'));
 const routes = require("./src/routes/apiRoutes");
 const authRouter = require("./src/routes/authRoutes");
 const { admin, bucket, auth } = require(path.resolve(__dirname, 'src/config/firebaseAdmin'));
+const { createQuote } = require(path.resolve(__dirname, 'src/controllers/QuoteController'));
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use("/api", routes);
 app.use("/auth", authRouter);
+app.post('/api/quotes', createQuote); // Add route to handle quote requests
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -42,5 +44,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Express server listening on port ${PORT}`);
 });
+
 
 
