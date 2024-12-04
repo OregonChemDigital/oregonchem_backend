@@ -5,6 +5,8 @@ const ProductController = require('../controllers/ProductController');
 const CategoryController = require('../controllers/CategoryController');
 const PresentationController = require('../controllers/PresentationController');
 const BannerController = require('../controllers/BannerController');
+const QuoteController = require('../controllers/QuoteController'); // Import QuoteController
+
 const { handleProductUploads, upload: productUpload } = require('../middlewares/productStorageMiddleware');
 const { handleCategoryUploads, upload: categoryUpload } = require('../middlewares/categoryStorageMiddleware');
 const { handlePresentationUploads, upload: presentationUpload } = require('../middlewares/presentationStorageMiddleware');
@@ -26,6 +28,7 @@ router.get('/public/productos', ProductController.getAllProducts);
 router.get('/public/categorias', CategoryController.getAllCategories);
 router.get('/public/presentaciones', PresentationController.getAllPresentations);
 router.get('/public/banners', BannerController.getAllBanners);
+router.post('/public/quotes', QuoteController.createQuote); // Link the createQuote function
 
 // Authenticated Routes
 router.use(authMiddleware);
@@ -50,5 +53,6 @@ router.get('/banners', BannerController.getAllBanners);
 router.post('/banners/nuevo', upload.single('image'), handleBannerUploads, BannerController.addBanner);
 
 module.exports = router;
+
 
 
