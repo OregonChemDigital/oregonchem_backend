@@ -9,6 +9,8 @@ const ProductController = {
                 .populate("presentations categories")
                 .exec();
 
+            console.log("Raw Products:", products);
+
             const filteredProducts = products.map((product) => {
                 const siteSpecificData = {
                     descriptions: site ? product.descriptions[site] : product.descriptions,

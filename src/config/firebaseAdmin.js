@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+require('dotenv').config(); // Load environment variables
 
 // Check if using environment variables for Firebase credentials
 let serviceAccount;
@@ -22,14 +23,20 @@ if (process.env.FIREBASE_TYPE) {
     serviceAccount = require('../utils/serviceAccountKey.json');
 }
 
-if (!admin.apps.length) {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        storageBucket: process.env.GOOGLE_CLOUD_STORAGE_BUCKET,
-    });
-}
+// Debug statement to check the bucket name
+console.log('GOOGLE_CLOUD_STORAGE_BUCKET from .env:', process.env.GOOGLE_CLOUD_STORAGE_BUCKET);
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: process.env.GOOGLE_CLOUD_STORAGE_BUCKET // Use the environment variable here
+});
+
+console.log('Google Cloud Storage Bucket:', process.env.GOOGLE_CLOUD_STORAGE_BUCKET);
 
 const bucket = admin.storage().bucket();
 const auth = admin.auth();
 
 module.exports = { admin, bucket, auth };
+
+
+
