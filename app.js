@@ -18,11 +18,23 @@ const dbConnection = require(path.resolve(__dirname, 'src/config/config'));
 dbConnection();
 
 // CORS options
-const corsOptions = {
-    origin: '*',
+const allowedOrigins = [
+    'http://localhost:4321', // Local development frontend
+    'https://quimicaindustrialpe.com', // Production frontend domain (replace with the correct one)
+  ];
+  
+  const corsOptions = {
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
-};
+  };
 
 // Middleware
 app.use(cors(corsOptions));
