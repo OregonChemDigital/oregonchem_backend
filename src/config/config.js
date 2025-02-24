@@ -13,7 +13,11 @@ const dbConnection = async () => {
         }
 
         console.log(`Connecting to MongoDB: ${uri}`);
-        await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+        await mongoose.connect(uri, {
+            dbName: 'oregonchem_prod',
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
         console.log('Connected to MongoDB');
     } catch (error) {
         console.error('MongoDB connection error:', error);
@@ -22,5 +26,6 @@ const dbConnection = async () => {
 };
 
 module.exports = dbConnection;
+
 
 
