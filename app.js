@@ -7,7 +7,7 @@ const routes = require("./src/routes/apiRoutes");
 const authRouter = require("./src/routes/authRoutes");
 const { admin, bucket, auth } = require(path.resolve(__dirname, 'src/config/firebaseAdmin'));
 const { createQuote } = require(path.resolve(__dirname, 'src/controllers/QuoteController'));
-const { Product } = require('./src/models/ProductModel'); // Adjust the path if necessary
+const { Product } = require('./src/models/Product'); 
 
 dotenv.config();
 
