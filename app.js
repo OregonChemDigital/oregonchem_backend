@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require('path');
 const dotenv = require("dotenv");
+console.log('Loaded MONGODB_URI:', process.env.MONGODB_URI);
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const routes = require("./src/routes/apiRoutes");

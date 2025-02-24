@@ -3,10 +3,7 @@ const mongoose = require('mongoose');
 
 const dbConnection = async () => {
     try {
-        const uri =
-            process.env.NODE_ENV === 'production'
-                ? process.env.MONGODB_URI_PROD
-                : process.env.MONGODB_URI;
+        const uri = process.env.MONGODB_URI;
 
         if (!uri) {
             throw new Error('MongoDB URI is not defined in the environment.');
@@ -14,9 +11,7 @@ const dbConnection = async () => {
 
         console.log(`Connecting to MongoDB: ${uri}`);
         await mongoose.connect(uri, {
-            dbName: 'oregonchem_prod',
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
+            dbName: 'oregonchem_prod', // Explicitly connect to the correct DB
         });
         console.log('Connected to MongoDB');
     } catch (error) {
@@ -26,6 +21,7 @@ const dbConnection = async () => {
 };
 
 module.exports = dbConnection;
+
 
 
 
