@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 5001;
 
 // Database connection
 const dbConnection = require(path.resolve(__dirname, 'src/config/config'));
+console.log('Current NODE_ENV:', process.env.NODE_ENV);
 dbConnection();
 
 // CORS options
@@ -52,18 +53,9 @@ app.use((req, res, next) => {
 // Routes
 app.use("/api", routes);
 app.use("/auth", authRouter);
-app.post('/api/quotes', createQuote); // Add route to handle quote requests
+app.post('/api/quotes', createQuote);
+app.get('/favicon.ico', (req, res) => res.status(204));
 
-app.get('/api/test/products', async (req, res) => {
-    try {
-      console.log('Test product fetch initiated');
-      const products = await Product.find({});
-      res.json(products);
-    } catch (error) {
-      console.error('Test fetch error:', error);
-      res.status(500).json({ message: 'Failed to fetch products for testing' });
-    }
-  });
   
 // Error handling middleware
 app.use((err, req, res, next) => {
