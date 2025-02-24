@@ -52,6 +52,16 @@ app.use("/api", routes);
 app.use("/auth", authRouter);
 app.post('/api/quotes', createQuote); // Add route to handle quote requests
 
+app.get('/api/test/products', async (req, res) => {
+    try {
+      const products = await Product.find({}); // Fetch all products without filters
+      res.json(products);
+    } catch (error) {
+      console.error('Test fetch error:', error);
+      res.status(500).json({ message: 'Failed to fetch products for testing' });
+    }
+  });  
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
