@@ -7,6 +7,7 @@ const routes = require("./src/routes/apiRoutes");
 const authRouter = require("./src/routes/authRoutes");
 const { admin, bucket, auth } = require(path.resolve(__dirname, 'src/config/firebaseAdmin'));
 const { createQuote } = require(path.resolve(__dirname, 'src/controllers/QuoteController'));
+const { Product } = require('./src/models/ProductModel'); // Adjust the path if necessary
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ const allowedOrigins = [
 
 // Middleware
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Allow preflight requests for all routes
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -54,14 +56,15 @@ app.post('/api/quotes', createQuote); // Add route to handle quote requests
 
 app.get('/api/test/products', async (req, res) => {
     try {
-      const products = await Product.find({}); // Fetch all products without filters
+      console.log('Test product fetch initiated');
+      const products = await Product.find({});
       res.json(products);
     } catch (error) {
       console.error('Test fetch error:', error);
       res.status(500).json({ message: 'Failed to fetch products for testing' });
     }
-  });  
-
+  });
+  
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);

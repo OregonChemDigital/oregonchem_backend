@@ -11,6 +11,7 @@ const authMiddleware = async (req, res, next) => {
         '/api/public/banners',
         '/api/public/quotes'
     ];
+    console.log('Incoming request URL:', req.originalUrl);
     if (publicPaths.includes(req.originalUrl)) {
         return next();
     }
