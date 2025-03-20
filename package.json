@@ -14,7 +14,7 @@
     "18": "0.0.0",
     "body-parser": "1.20.3",
     "cors": "^2.8.5",
-    "dotenv": "16.4.5",
+    "dotenv": "^16.4.5",
     "express": "4.21.2",
     "firebase": "11.2.0",
     "firebase-admin": "12.4.0",

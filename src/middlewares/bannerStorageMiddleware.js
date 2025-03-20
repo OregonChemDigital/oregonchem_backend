@@ -29,5 +29,3 @@ const handleBannerUploads = async (req, res, next) => {
 };
 
 module.exports = { upload, handleBannerUploads };
-
-

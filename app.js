@@ -1,16 +1,17 @@
 const express = require("express");
 const path = require('path');
 const dotenv = require("dotenv");
+
+dotenv.config();
 console.log('Loaded MONGODB_URI:', process.env.MONGODB_URI);
+
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const routes = require("./src/routes/apiRoutes");
 const authRouter = require("./src/routes/authRoutes");
 const { admin, bucket, auth } = require(path.resolve(__dirname, 'src/config/firebaseAdmin'));
 const { createQuote } = require(path.resolve(__dirname, 'src/controllers/QuoteController'));
-const { Product } = require('./src/models/Product'); 
-
-dotenv.config();
+const { Product } = require('./src/models/Product');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -22,22 +23,22 @@ dbConnection();
 
 // CORS options
 const allowedOrigins = [
-    'http://localhost:4321', // Local development frontend
-    'https://quimicaindustrialpe.com', // Production frontend domain (replace with the correct one)
-  ];
-  
-  const corsOptions = {
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    credentials: true,
-  };
+  'http://localhost:4321', // Local development frontend
+  'https://quimicaindustrialpe.com', // Production frontend domain (replace with the correct one)
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    console.log("Origin:", origin); // Log the origin here
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  credentials: true,
+};
 
 // Middleware
 app.use(cors(corsOptions));
@@ -47,8 +48,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Logging middleware
 app.use((req, res, next) => {
-    console.log(`${req.method} request for '${req.url}'`);
-    next();
+  console.log(`${req.method} request for '${req.url}'`);
+  next();
 });
 
 // Routes
@@ -57,18 +58,13 @@ app.use("/auth", authRouter);
 app.post('/api/quotes', createQuote);
 app.get('/favicon.ico', (req, res) => res.status(204));
 
-  
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`Express server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  console.log(`Express server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 });
-
-
-
-

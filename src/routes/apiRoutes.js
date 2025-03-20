@@ -53,6 +53,3 @@ router.get('/banners', BannerController.getAllBanners);
 router.post('/banners/nuevo', upload.single('image'), handleBannerUploads, BannerController.addBanner);
 
 module.exports = router;
-
-
-
