@@ -24,15 +24,17 @@ dbConnection();
 // CORS options
 const allowedOrigins = [
   'http://localhost:4321', // Local development frontend
+  'http://localhost:5173', // The correct port for your local frontend
   'https://quimicaindustrialpe.com', // Production frontend domain (replace with the correct one)
 ];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    console.log("Origin:", origin); // Log the origin here
+    console.log("Origin:", origin || "Unknown"); // Log for debugging
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.error(`Blocked by CORS: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
