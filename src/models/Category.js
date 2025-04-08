@@ -1,17 +1,31 @@
 const mongoose = require("mongoose");
 
+const siteSchema = {
+    type: String,
+    default: ""
+};
+
 const CategorySchema = new mongoose.Schema(
     {
-        name: { type: String, required: true, unique: true },
-        images: {
-            site1: { type: String },
-            site2: { type: String },
-            site3: { type: String },
-            site4: { type: String },
-            site5: { type: String },
+        name: { 
+            type: String, 
+            required: [true, "Category name is required"],
+            unique: true,
+            trim: true
         },
+        images: {
+            site1: siteSchema,
+            site2: siteSchema,
+            site3: siteSchema,
+            site4: siteSchema,
+            site5: siteSchema
+        }
     },
-    { timestamps: true }
+    { 
+        timestamps: true,
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true }
+    }
 );
 
 const Category = mongoose.model("Category", CategorySchema);

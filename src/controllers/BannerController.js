@@ -5,43 +5,55 @@ const BannerController = {
     async getAllBanners(req, res) {
         try {
             const banners = await Banner.find();
-            res.json(banners);
+            res.status(200).json({ data: banners });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            res.status(500).json({ 
+                message: "Error fetching banners", 
+                error: error.message 
+            });
         }
     },
 
     // GET ALL BANNERS FROM ONE SITE
     async getAllBannersFromSite(req, res) {
         try {
-            const { site } = req.query; // Get the site query parameter
-            let query = {}; // Default query to fetch all banners
-
-            if (site) {
-                query = { site }; // If site is provided, filter by site
-            }
-
-            const banners = await Banner.find(query); // Find banners based on query
-            res.json(banners);
+            const { site } = req.query;
+            const query = site ? { site } : {};
+            const banners = await Banner.find(query);
+            res.status(200).json({ data: banners });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            res.status(500).json({ 
+                message: "Error fetching banners", 
+                error: error.message 
+            });
         }
     },
 
     // ADD A BANNER
     async addBanner(req, res) {
         try {
-            const { name, site } = req.body; const imageFile = req.file;
+            const { name, site } = req.body;
+            const imageFile = req.file;
+
             if (!imageFile) {
-                return res.status(400).json({ message: "Image is required." });
+                return res.status(400).json({ 
+                    message: "Image is required" 
+                });
             }
-            const imageUrl = req.file.downloadURL;
-            const newBanner = new Banner({ name, site, imageUrl });
+
+            const newBanner = new Banner({ 
+                name, 
+                site, 
+                imageUrl: imageFile.downloadURL 
+            });
+
             await newBanner.save();
-            res.status(201).json({ message: "Banner created successfully!", banner: newBanner });
+            res.status(201).json({ data: newBanner });
         } catch (error) {
-            console.error("Error creating banner:", error);
-            res.status(500).json({ message: "Server error while creating banner." });
+            res.status(500).json({ 
+                message: "Error creating banner", 
+                error: error.message 
+            });
         }
     },
 };

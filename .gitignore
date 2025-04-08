@@ -24,6 +24,11 @@ Thumbs.db
 .firebase/
 .firebaserc
 src/utils/serviceAccountKey.json
+src/config/serviceAccountKey.json
+src/config/serviceAccountKey(old-backup).json
+src/config/analyticsServiceAccountKey.json
+src/routes/credentials.json
+src/utils/token.json
 
 # Coverage directory used by testing tools
 coverage/

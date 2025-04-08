@@ -20,17 +20,14 @@ const uploadFileToFirebase = (file, path) => {
     return new Promise((resolve, reject) => {
         uploadTask.on(
             "state_changed",
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(`Upload is ${progress}% done`);
-            },
+            null,
             reject,
             async () => {
                 try {
                     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                     resolve(downloadURL);
                 } catch (error) {
-                    reject(error);
+                    reject(new Error(`Failed to get download URL: ${error.message}`));
                 }
             }
         );
@@ -38,6 +35,10 @@ const uploadFileToFirebase = (file, path) => {
 };
 
 const handleFileUploads = async (req, basePath, entityName) => {
+    if (!req.files) {
+        return {};
+    }
+
     const uploadPromises = Object.keys(req.files).flatMap((fieldName) => {
         const files = req.files[fieldName];
         return files.map(async (file) => {
@@ -48,15 +49,17 @@ const handleFileUploads = async (req, basePath, entityName) => {
         });
     });
 
-    const uploadedFiles = await Promise.all(uploadPromises);
-    req.files = uploadedFiles.reduce((acc, file) => {
-        const key = file.fieldname;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(file);
-        return acc;
-    }, {});
-
-    return req.files;
+    try {
+        const uploadedFiles = await Promise.all(uploadPromises);
+        return uploadedFiles.reduce((acc, file) => {
+            const key = file.fieldname;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(file);
+            return acc;
+        }, {});
+    } catch (error) {
+        throw new Error(`Failed to handle file uploads: ${error.message}`);
+    }
 };
 
 module.exports = { uploadFileToFirebase, handleFileUploads };

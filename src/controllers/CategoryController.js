@@ -5,9 +5,12 @@ const CategoryController = {
     async getAllCategories(req, res) {
         try {
             const categories = await Category.find();
-            res.json(categories);
+            res.status(200).json({ data: categories });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            res.status(500).json({ 
+                message: "Error fetching categories", 
+                error: error.message 
+            });
         }
     },
 
@@ -16,24 +19,35 @@ const CategoryController = {
         try {
             const { name } = req.body;
 
+            if (!name) {
+                return res.status(400).json({ 
+                    message: "Category name is required" 
+                });
+            }
+
             const existingCategory = await Category.findOne({ name });
             if (existingCategory) {
-                return res.status(400).json({ message: "Esa categoría ya existe" });
+                return res.status(400).json({ 
+                    message: "Category already exists" 
+                });
             }
 
             const images = {};
             for (let i = 1; i <= 5; i++) {
-                if (req.files[`images[site${i}]`] && req.files[`images[site${i}]`][0]) {
-                    images[`site${i}`] = req.files[`images[site${i}]`][0].downloadURL;
+                const imageFile = req.files[`images[site${i}]`];
+                if (imageFile && imageFile[0]) {
+                    images[`site${i}`] = imageFile[0].downloadURL;
                 }
             }
 
             const category = new Category({ name, images });
             await category.save();
-            res.status(201).json(category);
+            res.status(201).json({ data: category });
         } catch (error) {
-            console.error("Error adding category:", error);
-            res.status(500).json({ message: "Error adding category", error: error.message });
+            res.status(500).json({ 
+                message: "Error adding category", 
+                error: error.message 
+            });
         }
     },
 

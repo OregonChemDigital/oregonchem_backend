@@ -1,11 +1,9 @@
-const createProductUploadFields = () => {
-    return [
-        { name: 'images[site1]', maxCount: 1 },
-        { name: 'images[site2]', maxCount: 1 },
-        { name: 'images[site3]', maxCount: 1 },
-        { name: 'images[site4]', maxCount: 1 },
-        { name: 'images[site5]', maxCount: 1 },
-    ];
-};
+const SITES = ['site1', 'site2', 'site3', 'site4', 'site5'];
+
+const createProductUploadFields = () => 
+    SITES.map(site => ({
+        name: `images[${site}]`,
+        maxCount: 1
+    }));
 
 module.exports = createProductUploadFields;

@@ -1,14 +1,16 @@
 const express = require("express");
 const path = require('path');
 const dotenv = require("dotenv");
-
-dotenv.config();
-console.log('Loaded MONGODB_URI:', process.env.MONGODB_URI);
-
 const cors = require("cors");
 const bodyParser = require("body-parser");
+
+// Load environment variables
+dotenv.config();
+
+// Import routes and configurations
 const routes = require("./src/routes/apiRoutes");
 const authRouter = require("./src/routes/authRoutes");
+const analyticsRoutes = require('./src/routes/analyticsRoutes');
 const { admin, bucket, auth } = require(path.resolve(__dirname, 'src/config/firebaseAdmin'));
 const { createQuote } = require(path.resolve(__dirname, 'src/controllers/QuoteController'));
 const { Product } = require('./src/models/Product');
@@ -18,23 +20,21 @@ const PORT = process.env.PORT || 5001;
 
 // Database connection
 const dbConnection = require(path.resolve(__dirname, 'src/config/config'));
-console.log('Current NODE_ENV:', process.env.NODE_ENV);
 dbConnection();
 
-// CORS options
+// CORS configuration
 const allowedOrigins = [
-  'http://localhost:4321', // Local development frontend
-  'http://localhost:5173', // The correct port for your local frontend
-  'https://quimicaindustrialpe.com', // Production frontend domain (replace with the correct one)
+  'http://localhost:4321',
+  'http://localhost:5173',
+  'http://localhost:5001',
+  'https://quimicaindustrialpe.com'
 ];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    console.log("Origin:", origin || "Unknown"); // Log for debugging
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.error(`Blocked by CORS: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -44,29 +44,29 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Allow preflight requests for all routes
+app.options('*', cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// Logging middleware
-app.use((req, res, next) => {
-  console.log(`${req.method} request for '${req.url}'`);
-  next();
-});
 
 // Routes
 app.use("/api", routes);
 app.use("/auth", authRouter);
 app.post('/api/quotes', createQuote);
 app.get('/favicon.ico', (req, res) => res.status(204));
+app.use('/api/analytics', analyticsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
+    error: {
+      message: err.message || 'Internal Server Error',
+      status: statusCode
+    }
+  });
 });
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Express server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  console.log(`Server running on port ${PORT}`);
 });

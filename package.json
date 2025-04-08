@@ -12,18 +12,23 @@
   "description": "",
   "dependencies": {
     "18": "0.0.0",
+    "@google-analytics/data": "^5.1.0",
     "body-parser": "1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "4.21.2",
     "firebase": "11.2.0",
     "firebase-admin": "12.4.0",
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^148.0.0",
     "mongodb": "6.8.1",
     "mongoose": "8.9.5",
     "multer": "1.4.5-lts.1",
     "node": "18",
-    "nodemailer": "6.9.15",
-    "pdfkit": "0.15.0"
+    "nodemailer": "^6.9.15",
+    "open": "^10.1.0",
+    "pdfkit": "0.15.0",
+    "server-destroy": "^1.0.1"
   },
   "engines": {
     "node": "18"

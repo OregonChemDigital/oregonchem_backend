@@ -5,10 +5,12 @@ const PresentationController = {
     async getAllPresentations(req, res) {
         try {
             const presentations = await Presentation.find();
-            res.json(presentations);
+            res.status(200).json({ data: presentations });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Error fetching presentations" });
+            res.status(500).json({ 
+                message: "Error fetching presentations", 
+                error: error.message 
+            });
         }
     },
 
@@ -17,14 +19,17 @@ const PresentationController = {
         try {
             const { name, type, measure } = req.body;
 
-            if (!name) {
-                return res.status(400).json({ message: "Name (quantity) is required" });
+            if (!name || !type || !measure) {
+                return res.status(400).json({ 
+                    message: "Name, type, and measure are required" 
+                });
             }
 
             const images = {};
             for (let i = 1; i <= 5; i++) {
-                if (req.files[`images[site${i}]`] && req.files[`images[site${i}]`][0]) {
-                    images[`site${i}`] = req.files[`images[site${i}]`][0].downloadURL;
+                const imageFile = req.files[`images[site${i}]`];
+                if (imageFile && imageFile[0]) {
+                    images[`site${i}`] = imageFile[0].downloadURL;
                 }
             }
 
@@ -36,12 +41,12 @@ const PresentationController = {
             });
 
             await presentation.save();
-            res.status(201).json(presentation);
+            res.status(201).json({ data: presentation });
         } catch (error) {
-            console.error("Error adding presentation:", error);
-            res
-                .status(500)
-                .json({ message: "Error adding presentation", error: error.message });
+            res.status(500).json({ 
+                message: "Error adding presentation", 
+                error: error.message 
+            });
         }
     },
 
@@ -50,14 +55,22 @@ const PresentationController = {
         try {
             const { id } = req.params;
             const presentation = await Presentation.findById(id);
+
             if (!presentation) {
-                return res.status(404).json({ message: "Presentation not found" });
+                return res.status(404).json({ 
+                    message: "Presentation not found" 
+                });
             }
+
             await Presentation.findByIdAndDelete(id);
-            res.json({ message: "Presentation deleted successfully" });
+            res.status(200).json({ 
+                message: "Presentation deleted successfully" 
+            });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Error deleting presentation" });
+            res.status(500).json({ 
+                message: "Error deleting presentation", 
+                error: error.message 
+            });
         }
     },
 };

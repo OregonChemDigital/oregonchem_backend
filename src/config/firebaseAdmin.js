@@ -1,42 +1,86 @@
+const express = require('express');
+const { google } = require('googleapis');
+const serviceAccount = require('./serviceAccountKey.json');
+const router = express.Router();
 const admin = require('firebase-admin');
-require('dotenv').config(); // Load environment variables
 
-// Check if using environment variables for Firebase credentials
-let serviceAccount;
-
-if (process.env.FIREBASE_TYPE) {
-    // Use environment variables to create the service account object
-    serviceAccount = {
-        type: process.env.FIREBASE_TYPE,
-        project_id: process.env.FIREBASE_PROJECT_ID,
-        private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-        private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        client_email: process.env.FIREBASE_CLIENT_EMAIL,
-        client_id: process.env.FIREBASE_CLIENT_ID,
-        auth_uri: process.env.FIREBASE_AUTH_URI,
-        token_uri: process.env.FIREBASE_TOKEN_URI,
-        auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_CERT_URL,
-        client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL
-    };
-} else {
-    // Fallback to using the serviceAccountKey.json file if environment variables are not set
-    serviceAccount = require('../utils/serviceAccountKey.json');
+// Initialize Firebase Admin if it hasn't been initialized
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: process.env.FIREBASE_DATABASE_URL
+    });
 }
 
-// Debug statement to check the bucket name
-console.log('GOOGLE_CLOUD_STORAGE_BUCKET from .env:', process.env.GOOGLE_CLOUD_STORAGE_BUCKET);
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: process.env.GOOGLE_CLOUD_STORAGE_BUCKET // Use the environment variable here
+// Initialize Google Auth client with service account credentials
+const googleAuth = new google.auth.GoogleAuth({
+    credentials: {
+        client_email: serviceAccount.client_email,
+        private_key: serviceAccount.private_key,
+    },
+    scopes: [
+        'https://www.googleapis.com/auth/analytics.readonly',
+        'https://www.googleapis.com/auth/analytics'
+    ],
 });
 
-console.log('Google Cloud Storage Bucket:', process.env.GOOGLE_CLOUD_STORAGE_BUCKET);
+// Google Analytics Data API client
+const analyticsDataClient = google.analyticsdata('v1beta');
 
-const bucket = admin.storage().bucket();
-const auth = admin.auth();
+// Middleware to verify Firebase token
+const verifyToken = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(401).json({ message: 'No authorization header' });
+        }
 
-module.exports = { admin, bucket, auth };
+        const token = authHeader.split('Bearer ')[1];
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided' });
+        }
 
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        req.user = decodedToken;
+        next();
+    } catch (error) {
+        console.error('Error verifying token:', error);
+        res.status(401).json({ message: 'Invalid token' });
+    }
+};
 
+// Apply the middleware to analytics routes
+router.use(verifyToken);
 
+// Endpoint to fetch analytics data
+router.get('/analytics', async (req, res) => {
+    try {
+        const authClient = await googleAuth.getClient();
+
+        const propertyId = process.env.GOOGLE_ANALYTICS_PROPERTY_ID;
+
+        const [response] = await analyticsDataClient.properties.runReport({
+            property: `properties/${propertyId}`,
+            auth: authClient,
+            requestBody: {
+                dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+                metrics: [{ name: 'sessions' }, { name: 'activeUsers' }],
+                dimensions: [{ name: 'date' }],
+            },
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error fetching analytics data:', error);
+        res.status(500).json({ message: 'Error fetching analytics data', error: error.message });
+    }
+});
+
+module.exports = {
+    admin,
+    auth: admin.auth(),
+    googleAuth,
+    analyticsDataClient,
+    router,
+    verifyToken
+};

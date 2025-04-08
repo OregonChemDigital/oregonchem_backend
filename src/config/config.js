@@ -13,7 +13,6 @@ const dbConnection = async () => {
         await mongoose.connect(uri, {
             dbName: 'oregonchem_prod', // Explicitly connect to the correct DB
         });
-        console.log('Connected to MongoDB');
     } catch (error) {
         console.error('MongoDB connection error:', error);
         process.exit(1);
@@ -21,7 +20,3 @@ const dbConnection = async () => {
 };
 
 module.exports = dbConnection;
-
-
-
-
