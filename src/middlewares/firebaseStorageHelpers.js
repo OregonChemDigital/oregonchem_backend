@@ -1,5 +1,6 @@
 const { getStorage, ref, uploadBytesResumable, getDownloadURL } = require("firebase/storage");
 const { initializeApp } = require("firebase/app");
+const sharp = require('sharp');
 
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
@@ -13,25 +14,40 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 
-const uploadFileToFirebase = (file, path) => {
-    const storageRef = ref(storage, path);
-    const uploadTask = uploadBytesResumable(storageRef, file.buffer);
+const uploadFileToFirebase = async (file, path) => {
+    try {
+        const jpgPath = path.replace(/\.[^/.]+$/, '.jpg');
 
-    return new Promise((resolve, reject) => {
-        uploadTask.on(
-            "state_changed",
-            null,
-            reject,
-            async () => {
-                try {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    resolve(downloadURL);
-                } catch (error) {
-                    reject(new Error(`Failed to get download URL: ${error.message}`));
+        const jpgBuffer = await sharp(file.buffer)
+            .jpeg({ 
+                quality: 80,
+                progressive: true,
+                optimizeCoding: true,
+                mozjpeg: true
+            })
+            .toBuffer();
+
+        const storageRef = ref(storage, jpgPath);
+        const uploadTask = uploadBytesResumable(storageRef, jpgBuffer);
+
+        return new Promise((resolve, reject) => {
+            uploadTask.on(
+                "state_changed",
+                null,
+                reject,
+                async () => {
+                    try {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        resolve(downloadURL);
+                    } catch (error) {
+                        reject(new Error(`Failed to get download URL: ${error.message}`));
+                    }
                 }
-            }
-        );
-    });
+            );
+        });
+    } catch (error) {
+        throw new Error(`Failed to process image: ${error.message}`);
+    }
 };
 
 const handleFileUploads = async (req, basePath, entityName) => {
@@ -39,11 +55,35 @@ const handleFileUploads = async (req, basePath, entityName) => {
         return {};
     }
 
+    const sanitizedEntityName = entityName
+        .replace(/\s+/g, '_')
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '');
+
     const uploadPromises = Object.keys(req.files).flatMap((fieldName) => {
         const files = req.files[fieldName];
         return files.map(async (file) => {
-            const fileExtension = file.originalname.split(".").pop();
-            const storagePath = `${basePath}/${entityName}/${fieldName}/${entityName}_${fieldName}.${fileExtension}`;
+            const siteMatch = fieldName.match(/site(\d+)/);
+            const siteNumber = siteMatch ? siteMatch[1] : '1';
+            
+            let storagePath;
+            switch (basePath) {
+                case 'products':
+                    storagePath = `products/${sanitizedEntityName}/site${siteNumber}/${sanitizedEntityName}_site${siteNumber}.jpg`;
+                    break;
+                case 'categories':
+                    storagePath = `categories/${sanitizedEntityName}/site${siteNumber}/${sanitizedEntityName}_site${siteNumber}.jpg`;
+                    break;
+                case 'presentations':
+                    storagePath = `presentations/${sanitizedEntityName}/site${siteNumber}/${sanitizedEntityName}_site${siteNumber}.jpg`;
+                    break;
+                case 'banners':
+                    storagePath = `banners/site${siteNumber}/${sanitizedEntityName}_site${siteNumber}.jpg`;
+                    break;
+                default:
+                    throw new Error(`Invalid base path: ${basePath}`);
+            }
+
             const downloadURL = await uploadFileToFirebase(file, storagePath);
             return { ...file, downloadURL };
         });

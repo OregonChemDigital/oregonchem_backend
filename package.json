@@ -28,7 +28,8 @@
     "nodemailer": "^6.9.15",
     "open": "^10.1.0",
     "pdfkit": "0.15.0",
-    "server-destroy": "^1.0.1"
+    "server-destroy": "^1.0.1",
+    "sharp": "^0.34.1"
   },
   "engines": {
     "node": "18"
