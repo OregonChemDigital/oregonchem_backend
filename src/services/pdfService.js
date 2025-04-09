@@ -42,20 +42,20 @@ const generatePDF = async (quote) => {
                 console.warn('Logo not found:', error.message);
             }
 
-            // Company Info
+            // Company Info - aligned left below logo
             doc
                 .fontSize(16)
                 .fillColor('#2c3e50')
-                .text(siteConfig.name, 150, 50);
+                .text(siteConfig.name, 50, 140);
 
             doc
                 .fontSize(10)
                 .fillColor('#7f8c8d')
-                .text(siteConfig.address, 150, 70)
-                .text(`Tel: ${siteConfig.phone}`, 150, 85)
-                .text(`Email: ${siteConfig.email}`, 150, 100);
+                .text(siteConfig.address, 50, 160)
+                .text(`Tel: ${siteConfig.phone}`, 50, 175)
+                .text(`Email: ${siteConfig.email}`, 50, 190);
 
-            // === Quote Title ===
+            // === Quote Title - centered ===
             doc
                 .moveDown(2)
                 .fontSize(20)
@@ -63,42 +63,64 @@ const generatePDF = async (quote) => {
                 .text('COTIZACIÓN', { align: 'center' })
                 .moveDown();
 
-            // === Quote Details ===
+            // === Quote Details - aligned left with time ===
             doc
                 .fontSize(12)
                 .fillColor('#2c3e50')
-                .text(`Número: ${quote._id}`)
-                .text(`Fecha: ${new Date(quote.createdAt).toLocaleDateString('es-PE')}`);
+                .text(`Número: ${quote._id}`, { align: 'left' })
+                .text(`Fecha: ${new Date(quote.createdAt).toLocaleDateString('es-PE')}`, { align: 'left' })
+                .text(`Hora: ${new Date(quote.createdAt).toLocaleTimeString('es-PE')}`, { align: 'left' });
 
-            // === Client Information ===
+            // === Client Information - aligned left ===
             doc
                 .moveDown()
                 .fontSize(14)
                 .fillColor('#e74c3c')
-                .text('INFORMACIÓN DEL CLIENTE')
+                .text('INFORMACIÓN DEL CLIENTE', { align: 'left' })
                 .moveDown();
 
             doc
                 .fontSize(12)
                 .fillColor('#2c3e50')
-                .text(`Nombre: ${quote.client.name} ${quote.client.lastname}`)
-                .text(`Email: ${quote.client.email}`)
-                .text(`Teléfono: ${quote.client.phone}`);
+                .text(`Nombre: ${quote.client.name} ${quote.client.lastname}`, { align: 'left' })
+                .text(`Email: ${quote.client.email}`, { align: 'left' })
+                .text(`Teléfono: ${quote.client.phone}`, { align: 'left' });
 
-            if (quote.client.company) doc.text(`Empresa: ${quote.client.company}`);
-            if (quote.client.ruc) doc.text(`RUC: ${quote.client.ruc}`);
-            if (quote.contactMethod) doc.text(`Método de contacto preferido: ${quote.contactMethod}`);
+            if (quote.client.company) doc.text(`Empresa: ${quote.client.company}`, { align: 'left' });
+            if (quote.client.ruc) doc.text(`RUC: ${quote.client.ruc}`, { align: 'left' });
+            if (quote.contactMethod) doc.text(`Método de contacto preferido: ${quote.contactMethod}`, { align: 'left' });
 
             // === Products Section ===
             doc
                 .moveDown()
                 .fontSize(14)
                 .fillColor('#e74c3c')
-                .text('PRODUCTOS SOLICITADOS')
+                .text('PRODUCTOS SOLICITADOS', { align: 'left' })
                 .moveDown();
 
             // Table header start position
             const startY = doc.y;
+
+            // Table headers
+            doc
+                .fontSize(12)
+                .fillColor('#2c3e50')
+                .text('Producto', 50, startY)
+                .text('Presentación', 200, startY)
+                .text('Cantidad', 350, startY)
+                .text('Frecuencia', 450, startY);
+
+            // Table rows
+            let y = startY + 20;
+            quote.products.forEach(product => {
+                doc
+                    .fontSize(10)
+                    .text(product.name, 50, y)
+                    .text(product.presentation, 200, y)
+                    .text(`${product.quantity} ${product.unit}`, 350, y)
+                    .text(product.frequency, 450, y);
+                y += 20;
+            });
 
             // Finish writing the document
             doc.end();
