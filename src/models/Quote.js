@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 
 const quoteSchema = new mongoose.Schema({
     site: {
+        id: {
+            type: String,
+            required: true,
+            trim: true,
+            enum: ['quimicaindustrialpe', 'site2', 'site3', 'site4', 'site5']
+        },
         name: {
             type: String,
             required: true,
@@ -21,6 +27,14 @@ const quoteSchema = new mongoose.Schema({
             trim: true
         },
         department: {
+            type: String,
+            trim: true
+        },
+        phone: {
+            type: String,
+            trim: true
+        },
+        email: {
             type: String,
             trim: true
         }
@@ -72,11 +86,12 @@ const quoteSchema = new mongoose.Schema({
         },
         presentation: {
             type: String,
-            default: '-'
+            required: true
         },
         frequency: {
             type: String,
-            default: '-'
+            required: true,
+            enum: ['única', 'quincenal', 'mensual', 'bimestral', 'trimestral']
         }
     }],
     observations: {
@@ -95,8 +110,8 @@ const quoteSchema = new mongoose.Schema({
     },
     contactMethod: {
         type: String,
-        enum: ['email', 'whatsapp', 'llamada'],
-        default: 'email'
+        required: true,
+        enum: ['email', 'whatsapp', 'llamada']
     }
 }, {
     timestamps: true

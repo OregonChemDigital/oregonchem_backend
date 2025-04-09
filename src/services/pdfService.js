@@ -2,16 +2,13 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs').promises;
 const path = require('path');
 
-// Site-specific configurations
-const siteConfigs = {
-    quimicaindustrialpe: {
-        name: 'Química Industrial Perú',
-        address: 'Dirección de la empresa',
-        phone: 'Teléfono de contacto',
-        email: 'correo@quimicaindustrialpe.com',
-        logo: path.join(__dirname, '../../public/qiLogo.png') // Updated path to public directory
-    },
-    // Add configurations for other sites
+// Default site configuration
+const defaultSiteConfig = {
+    name: 'Química Industrial Perú',
+    address: 'Av. Industrial 123, Lima, Perú',
+    phone: '+51 1 123 4567',
+    email: 'contacto@quimicaindustrialpe.com',
+    logo: path.join(__dirname, '../../public/qiLogo.png')
 };
 
 const generatePDF = async (quote) => {
@@ -23,7 +20,8 @@ const generatePDF = async (quote) => {
         doc.on('end', () => resolve(Buffer.concat(chunks)));
         doc.on('error', reject);
 
-        const siteConfig = siteConfigs[quote.site.id];
+        // Always use default site configuration
+        const siteConfig = defaultSiteConfig;
 
         // Header
         try {
@@ -32,7 +30,7 @@ const generatePDF = async (quote) => {
                 doc.image(siteConfig.logo, 50, 50, { width: 100 });
             }
         } catch (error) {
-            console.warn(`Logo not found for site ${quote.site.id}:`, error.message);
+            console.warn('Logo not found:', error.message);
         }
 
         doc.fontSize(20).text(siteConfig.name, 170, 50);
@@ -60,6 +58,9 @@ const generatePDF = async (quote) => {
         if (quote.client.ruc) {
             doc.text(`RUC: ${quote.client.ruc}`);
         }
+        if (quote.contactMethod) {
+            doc.text(`Método de contacto preferido: ${quote.contactMethod}`);
+        }
 
         // Products
         doc.moveDown();
@@ -69,15 +70,17 @@ const generatePDF = async (quote) => {
         const startY = doc.y;
         doc.fontSize(12);
         doc.text('Producto', 50, startY);
-        doc.text('Cantidad', 200, startY);
-        doc.text('Unidad', 350, startY);
+        doc.text('Presentación', 200, startY);
+        doc.text('Cantidad', 300, startY);
+        doc.text('Frecuencia', 400, startY);
         
         // Table rows
         let y = startY + 20;
         quote.products.forEach(product => {
             doc.text(product.name, 50, y);
-            doc.text(product.quantity.toString(), 200, y);
-            doc.text(product.unit, 350, y);
+            doc.text(product.presentation, 200, y);
+            doc.text(`${product.quantity} ${product.unit}`, 300, y);
+            doc.text(product.frequency, 400, y);
             y += 20;
         });
 
@@ -92,7 +95,9 @@ const generatePDF = async (quote) => {
         const pageHeight = doc.page.height;
         doc.fontSize(10)
            .text('Gracias por su preferencia', 50, pageHeight - 100, { align: 'center' })
-           .text(siteConfig.name, 50, pageHeight - 80, { align: 'center' });
+           .text(siteConfig.name, 50, pageHeight - 80, { align: 'center' })
+           .text(`Tel: ${siteConfig.phone}`, 50, pageHeight - 60, { align: 'center' })
+           .text(`Email: ${siteConfig.email}`, 50, pageHeight - 40, { align: 'center' });
 
         doc.end();
     });

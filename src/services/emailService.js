@@ -45,7 +45,7 @@ const sendQuoteEmail = async (quote, pdfBuffer) => {
                 logo: process.env.COMPANY_LOGO_URL,
                 quoteId: quote._id,
                 date: new Date(quote.createdAt).toLocaleDateString('es-PE'),
-                clientName: `${quote.client.name} ${quote.client.lastName || ''}`,
+                clientName: quote.client.name,
                 clientInfo: quote.client,
                 contactMethod: quote.contactMethod,
                 products: formattedProducts,
