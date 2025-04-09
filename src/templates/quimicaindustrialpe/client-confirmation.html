@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de Cotización</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #f02424;
+        }
+        .product-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{logo}}" alt="{{companyName}}" class="logo">
+        <h1>Confirmación de Cotización</h1>
+    </div>
+
+    <div class="section">
+        <p>Gracias por contactar a {{companyName}}. Hemos recibido su solicitud de cotización y la estamos procesando.</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Detalles de su Cotización</div>
+        <p><strong>ID:</strong> {{quoteId}}</p>
+        <p><strong>Fecha:</strong> {{date}}</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Productos Solicitados</div>
+        {{{products}}}
+    </div>
+
+    {{#if observations}}
+    <div class="section">
+        <div class="section-title">Observaciones</div>
+        <p>{{observations}}</p>
+    </div>
+    {{/if}}
+
+    <div class="section">
+        <p>Nuestro equipo se pondrá en contacto con usted a la brevedad para proporcionarle más información sobre su cotización.</p>
+        <p>Si tiene alguna pregunta adicional, no dude en contactarnos.</p>
+    </div>
+
+    <div class="footer">
+        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+        <p>&copy; {{companyName}} - Todos los derechos reservados</p>
+    </div>
+</body>
+</html> 

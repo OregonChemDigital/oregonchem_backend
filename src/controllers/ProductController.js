@@ -6,28 +6,54 @@ const ProductController = {
         try {
             const { site } = req.query;
             const products = await Product.find()
-                .populate("presentations categories")
+                .populate({
+                    path: 'presentations',
+                    select: 'name type measure'
+                })
+                .populate({
+                    path: 'categories',
+                    select: 'name'
+                })
                 .exec();
 
+            console.log('Found products:', products.length); // Debug log
+
             const filteredProducts = products.map((product) => {
+                // If no site is specified, return all data
+                if (!site) {
+                    return {
+                        _id: product._id,
+                        name: product.name,
+                        presentations: product.presentations || [],
+                        categories: product.categories || [],
+                        descriptions: product.descriptions || {},
+                        uses: product.uses || {},
+                        images: product.images || {}
+                    };
+                }
+
+                // If site is specified, return site-specific data
                 const siteSpecificData = {
-                    descriptions: site ? product.descriptions[site] : product.descriptions,
-                    uses: site ? product.uses[site] : product.uses,
-                    images: site ? product.images[site] : product.images
+                    descriptions: product.descriptions?.[site] || product.descriptions?.site1 || "",
+                    uses: product.uses?.[site] || product.uses?.site1 || "",
+                    images: product.images?.[site] || product.images?.site1 || ""
                 };
+
                 return {
                     _id: product._id,
                     name: product.name,
-                    presentations: product.presentations,
-                    categories: product.categories,
-                    descriptions: siteSpecificData.descriptions || "",
-                    uses: siteSpecificData.uses || "",
-                    images: siteSpecificData.images || ""
+                    presentations: product.presentations || [],
+                    categories: product.categories || [],
+                    descriptions: siteSpecificData.descriptions,
+                    uses: siteSpecificData.uses,
+                    images: siteSpecificData.images
                 };
             });
 
+            console.log('Filtered products:', filteredProducts.length); // Debug log
             res.status(200).json({ data: filteredProducts });
         } catch (error) {
+            console.error('Error in getAllProducts:', error); // Debug log
             res.status(500).json({ 
                 message: "Error fetching products", 
                 error: error.message 

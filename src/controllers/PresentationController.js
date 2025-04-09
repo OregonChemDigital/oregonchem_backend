@@ -4,9 +4,11 @@ const PresentationController = {
     // GET ALL PRESENTATIONS
     async getAllPresentations(req, res) {
         try {
-            const presentations = await Presentation.find();
+            const presentations = await Presentation.find().select('name type measure images');
+            console.log('Found presentations:', presentations.length); // Debug log
             res.status(200).json({ data: presentations });
         } catch (error) {
+            console.error('Error in getAllPresentations:', error); // Debug log
             res.status(500).json({ 
                 message: "Error fetching presentations", 
                 error: error.message 
