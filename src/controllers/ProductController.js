@@ -16,8 +16,6 @@ const ProductController = {
                 })
                 .exec();
 
-            console.log('Found products:', products.length); // Debug log
-
             const filteredProducts = products.map((product) => {
                 // If no site is specified, return all data
                 if (!site) {
@@ -49,14 +47,12 @@ const ProductController = {
                     images: siteSpecificData.images
                 };
             });
-
-            console.log('Filtered products:', filteredProducts.length); // Debug log
             res.status(200).json({ data: filteredProducts });
         } catch (error) {
             console.error('Error in getAllProducts:', error); // Debug log
-            res.status(500).json({ 
-                message: "Error fetching products", 
-                error: error.message 
+            res.status(500).json({
+                message: "Error fetching products",
+                error: error.message
             });
         }
     },
@@ -68,8 +64,8 @@ const ProductController = {
             const { name, presentations, categories, descriptions, uses } = req.body;
 
             if (!name || !presentations || !categories) {
-                return res.status(400).json({ 
-                    message: "Missing required fields: name, presentations, categories" 
+                return res.status(400).json({
+                    message: "Missing required fields: name, presentations, categories"
                 });
             }
 
@@ -91,9 +87,9 @@ const ProductController = {
             const savedProduct = await newProduct.save();
             res.status(201).json({ data: savedProduct });
         } catch (error) {
-            res.status(500).json({ 
-                message: "Error creating product", 
-                error: error.message 
+            res.status(500).json({
+                message: "Error creating product",
+                error: error.message
             });
         }
     },
@@ -116,8 +112,8 @@ const ProductController = {
             };
 
             if (!siteData.descriptions && !siteData.uses && !siteData.images) {
-                return res.status(404).json({ 
-                    message: "No data available for the requested site" 
+                return res.status(404).json({
+                    message: "No data available for the requested site"
                 });
             }
 
@@ -130,9 +126,9 @@ const ProductController = {
                 images: siteData.images,
             });
         } catch (error) {
-            res.status(500).json({ 
-                message: "Error fetching product", 
-                error: error.message 
+            res.status(500).json({
+                message: "Error fetching product",
+                error: error.message
             });
         }
     },
@@ -142,8 +138,8 @@ const ProductController = {
         try {
             const { searchTerm } = req.query;
             if (!searchTerm) {
-                return res.status(400).json({ 
-                    message: "Search term is required" 
+                return res.status(400).json({
+                    message: "Search term is required"
                 });
             }
 
@@ -156,9 +152,9 @@ const ProductController = {
 
             res.status(200).json({ data: products });
         } catch (error) {
-            res.status(500).json({ 
-                message: "Error searching products", 
-                error: error.message 
+            res.status(500).json({
+                message: "Error searching products",
+                error: error.message
             });
         }
     }

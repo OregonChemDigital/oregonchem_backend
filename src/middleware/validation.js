@@ -7,6 +7,7 @@ const validateQuote = [
   body('products.*.quantity').isInt({ min: 1 }).withMessage('Quantity must be a positive integer'),
   body('products.*.unit').isString().withMessage('Unit must be a string'),
   body('client.name').isString().withMessage('Client name must be a string'),
+  body('client.lastname').isString().withMessage('Client lastname must be a string'),
   body('client.email').isEmail().withMessage('Invalid email format'),
   body('client.phone').isString().withMessage('Phone must be a string'),
   body('client.company').optional().isString().withMessage('Company must be a string'),

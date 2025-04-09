@@ -29,7 +29,7 @@ const sendQuoteEmail = async (quote, pdfBuffer) => {
         // Format products for email template
         const formattedProducts = quote.products.map((product, index) => `
             <div class="product-item">
-                <p><strong>${index + 1}. Producto:</strong> ${product.name}</p>
+                <p><strong>Producto ${index + 1}:</strong> ${product.name}</p>
                 <p><strong>Presentación:</strong> ${product.presentation || '-'}</p>
                 <p><strong>Cantidad:</strong> ${product.quantity} ${product.unit}</p>
                 <p><strong>Frecuencia:</strong> ${product.frequency || '-'}</p>
@@ -45,7 +45,7 @@ const sendQuoteEmail = async (quote, pdfBuffer) => {
                 logo: process.env.COMPANY_LOGO_URL,
                 quoteId: quote._id,
                 date: new Date(quote.createdAt).toLocaleDateString('es-PE'),
-                clientName: quote.client.name,
+                clientName: quote.client.name + ' ' + quote.client.lastname,
                 clientInfo: quote.client,
                 contactMethod: quote.contactMethod,
                 products: formattedProducts,

@@ -36,7 +36,6 @@ async function main() {
             oAuth2Client.setCredentials(tokens);
 
             fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens));
-            console.log('✅ Token stored to', TOKEN_PATH);
         }
     }).listen(3000, () => {
         open(authorizeUrl, { wait: false }).then(cp => cp.unref());

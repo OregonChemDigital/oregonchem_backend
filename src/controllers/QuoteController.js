@@ -1,12 +1,11 @@
 const Quote = require('../models/Quote');
 const { sendQuoteEmail } = require('../services/emailService');
-const { generatePDF } = require('../services/pdfService');
+const generatePDF = require('../services/pdfService');
 
 const QuoteController = {
   // Create a new quote
   async createQuote(req, res) {
     try {
-      console.log('Received request body:', JSON.stringify(req.body, null, 2));
       
       // Validate required fields
       if (!req.body.client?.name) {
@@ -27,9 +26,7 @@ const QuoteController = {
           language: req.get('accept-language')
         }
       });
-      
-      console.log('Quote object before save:', JSON.stringify(quote, null, 2));
-      
+            
       await quote.save();
       console.log('Quote saved successfully');
 

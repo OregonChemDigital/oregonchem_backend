@@ -5,10 +5,8 @@ const CategoryController = {
     async getAllCategories(req, res) {
         try {
             const categories = await Category.find().select('name images');
-            console.log('Found categories:', categories.length); // Debug log
             res.status(200).json({ data: categories });
         } catch (error) {
-            console.error('Error in getAllCategories:', error); // Debug log
             res.status(500).json({ 
                 message: "Error fetching categories", 
                 error: error.message 

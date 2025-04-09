@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Email Template Preview</title>
+    <link rel="stylesheet" href="styles/email.css">
+    <script>
+        // Mock data for preview
+        const mockData = {
+            logo: 'https://via.placeholder.com/180x60',
+            companyName: 'Química Industrial Perú',
+            quoteId: 'Q-2024-001',
+            date: new Date().toLocaleDateString('es-PE'),
+            products: `
+                <div class="product-item">
+                    <p><strong>1: Producto de Prueba</strong></p>
+                    <p><strong>Presentación:</strong> 1L</p>
+                    <p><strong>Cantidad:</strong> 10 unidades</p>
+                    <p><strong>Frecuencia:</strong> mensual</p>
+                </div>
+                <div class="product-item">
+                    <p><strong>2: Otro Producto</strong></p>
+                    <p><strong>Presentación:</strong> 5L</p>
+                    <p><strong>Cantidad:</strong> 5 unidades</p>
+                    <p><strong>Frecuencia:</strong> quincenal</p>
+                </div>
+            `,
+            observations: 'Estas son algunas observaciones de prueba para el preview.'
+        };
+
+        // Function to update preview with mock data
+        function updatePreview() {
+            document.querySelector('.logo').src = mockData.logo;
+            document.querySelector('.logo').alt = mockData.companyName;
+            document.querySelector('h1').textContent = 'Confirmación de Cotización';
+            document.querySelectorAll('[data-company]').forEach(el => el.textContent = mockData.companyName);
+            document.querySelector('[data-quote-id]').textContent = mockData.quoteId;
+            document.querySelector('[data-date]').textContent = mockData.date;
+            document.querySelector('[data-products]').innerHTML = mockData.products;
+            document.querySelector('[data-observations]').textContent = mockData.observations;
+        }
+
+        // Update preview when page loads
+        window.onload = updatePreview;
+    </script>
+</head>
+<body>
+    <div class="header">
+        <img src="" alt="" class="logo">
+        <h1></h1>
+    </div>
+
+    <div class="section">
+        <p>Gracias por contactar con <span data-company></span>. <br>Hemos recibido su solicitud de cotización y la estamos procesando.</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Detalles de su Cotización</div>
+        <p><strong>Número de Referencia:</strong> <span data-quote-id></span></p>
+        <p><strong>Fecha de Solicitud:</strong> <span data-date></span></p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Productos Solicitados</div>
+        <div data-products></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Observaciones</div>
+        <p data-observations></p>
+    </div>
+
+    <div class="section">
+        <p>Nuestro equipo se pondrá en contacto con usted a la brevedad para proporcionarle más información sobre su cotización.</p>
+        <p>Si tiene alguna pregunta adicional, no dude en contactarnos. </p>
+        <p>Gracias por preferirnos!</p>
+    </div>
+
+    <div class="footer">
+        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+        <p>&copy; <span data-company></span> - Todos los derechos reservados</p>
+    </div>
+</body>
+</html> 

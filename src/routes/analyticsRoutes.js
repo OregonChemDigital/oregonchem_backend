@@ -256,7 +256,6 @@ router.get('/:siteId/events', async (req, res) => {
             throw new Error(`Google Analytics Property ID for ${site.name} is not configured`);
         }
 
-        console.log(`Fetching events for site: ${site.name} with property ID: ${site.propertyId}`);
         const data = await fetchCustomEvents(site.propertyId);
         
         // Process the events data

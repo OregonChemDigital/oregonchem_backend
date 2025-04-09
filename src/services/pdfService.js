@@ -13,96 +13,97 @@ const defaultSiteConfig = {
 
 const generatePDF = async (quote) => {
     return new Promise((resolve, reject) => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument({
+            size: 'A4',
+            margin: 50,
+            bufferPages: true
+        });
+
         const chunks = [];
-        
+
         doc.on('data', chunk => chunks.push(chunk));
         doc.on('end', () => resolve(Buffer.concat(chunks)));
         doc.on('error', reject);
 
-        // Always use default site configuration
+        // Use default site configuration
         const siteConfig = defaultSiteConfig;
 
-        // Header
-        try {
-            // Check if logo file exists before trying to use it
-            if (siteConfig.logo && fs.existsSync(siteConfig.logo)) {
-                doc.image(siteConfig.logo, 50, 50, { width: 100 });
+        // Set default font
+        doc.font('Helvetica');
+
+        // === Header with logo and company info ===
+        (async () => {
+            try {
+                const logoExists = await fs.access(siteConfig.logo).then(() => true).catch(() => false);
+                if (logoExists) {
+                    doc.image(siteConfig.logo, 50, 50, { width: 80 });
+                }
+            } catch (error) {
+                console.warn('Logo not found:', error.message);
             }
-        } catch (error) {
-            console.warn('Logo not found:', error.message);
-        }
 
-        doc.fontSize(20).text(siteConfig.name, 170, 50);
-        doc.fontSize(10).text(siteConfig.address, 170, 80);
-        doc.text(`Tel: ${siteConfig.phone}`, 170, 95);
-        doc.text(`Email: ${siteConfig.email}`, 170, 110);
+            // Company Info
+            doc
+                .fontSize(16)
+                .fillColor('#2c3e50')
+                .text(siteConfig.name, 150, 50);
 
-        // Quote Information
-        doc.moveDown(2);
-        doc.fontSize(16).text('COTIZACIÓN', { align: 'center' });
-        doc.moveDown();
-        doc.fontSize(12).text(`Número: ${quote._id}`);
-        doc.text(`Fecha: ${new Date(quote.createdAt).toLocaleDateString('es-PE')}`);
+            doc
+                .fontSize(10)
+                .fillColor('#7f8c8d')
+                .text(siteConfig.address, 150, 70)
+                .text(`Tel: ${siteConfig.phone}`, 150, 85)
+                .text(`Email: ${siteConfig.email}`, 150, 100);
 
-        // Client Information
-        doc.moveDown();
-        doc.fontSize(14).text('INFORMACIÓN DEL CLIENTE');
-        doc.fontSize(12);
-        doc.text(`Nombre: ${quote.client.name}`);
-        doc.text(`Email: ${quote.client.email}`);
-        doc.text(`Teléfono: ${quote.client.phone}`);
-        if (quote.client.company) {
-            doc.text(`Empresa: ${quote.client.company}`);
-        }
-        if (quote.client.ruc) {
-            doc.text(`RUC: ${quote.client.ruc}`);
-        }
-        if (quote.contactMethod) {
-            doc.text(`Método de contacto preferido: ${quote.contactMethod}`);
-        }
+            // === Quote Title ===
+            doc
+                .moveDown(2)
+                .fontSize(20)
+                .fillColor('#e74c3c')
+                .text('COTIZACIÓN', { align: 'center' })
+                .moveDown();
 
-        // Products
-        doc.moveDown();
-        doc.fontSize(14).text('PRODUCTOS SOLICITADOS');
-        
-        // Table header
-        const startY = doc.y;
-        doc.fontSize(12);
-        doc.text('Producto', 50, startY);
-        doc.text('Presentación', 200, startY);
-        doc.text('Cantidad', 300, startY);
-        doc.text('Frecuencia', 400, startY);
-        
-        // Table rows
-        let y = startY + 20;
-        quote.products.forEach(product => {
-            doc.text(product.name, 50, y);
-            doc.text(product.presentation, 200, y);
-            doc.text(`${product.quantity} ${product.unit}`, 300, y);
-            doc.text(product.frequency, 400, y);
-            y += 20;
-        });
+            // === Quote Details ===
+            doc
+                .fontSize(12)
+                .fillColor('#2c3e50')
+                .text(`Número: ${quote._id}`)
+                .text(`Fecha: ${new Date(quote.createdAt).toLocaleDateString('es-PE')}`);
 
-        // Observations
-        if (quote.observations) {
-            doc.moveDown();
-            doc.fontSize(14).text('OBSERVACIONES');
-            doc.fontSize(12).text(quote.observations);
-        }
+            // === Client Information ===
+            doc
+                .moveDown()
+                .fontSize(14)
+                .fillColor('#e74c3c')
+                .text('INFORMACIÓN DEL CLIENTE')
+                .moveDown();
 
-        // Footer
-        const pageHeight = doc.page.height;
-        doc.fontSize(10)
-           .text('Gracias por su preferencia', 50, pageHeight - 100, { align: 'center' })
-           .text(siteConfig.name, 50, pageHeight - 80, { align: 'center' })
-           .text(`Tel: ${siteConfig.phone}`, 50, pageHeight - 60, { align: 'center' })
-           .text(`Email: ${siteConfig.email}`, 50, pageHeight - 40, { align: 'center' });
+            doc
+                .fontSize(12)
+                .fillColor('#2c3e50')
+                .text(`Nombre: ${quote.client.name} ${quote.client.lastname}`)
+                .text(`Email: ${quote.client.email}`)
+                .text(`Teléfono: ${quote.client.phone}`);
 
-        doc.end();
+            if (quote.client.company) doc.text(`Empresa: ${quote.client.company}`);
+            if (quote.client.ruc) doc.text(`RUC: ${quote.client.ruc}`);
+            if (quote.contactMethod) doc.text(`Método de contacto preferido: ${quote.contactMethod}`);
+
+            // === Products Section ===
+            doc
+                .moveDown()
+                .fontSize(14)
+                .fillColor('#e74c3c')
+                .text('PRODUCTOS SOLICITADOS')
+                .moveDown();
+
+            // Table header start position
+            const startY = doc.y;
+
+            // Finish writing the document
+            doc.end();
+        })();
     });
 };
 
-module.exports = {
-    generatePDF
-}; 
+module.exports = generatePDF;

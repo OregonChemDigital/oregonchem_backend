@@ -42,7 +42,6 @@ const fetchAnalyticsData = async () => {
                 metrics: [{ name: 'sessions' }],
             },
         });
-        console.log(res.data);
     } catch (error) {
         console.error('Error fetching analytics data:', error);
     }
