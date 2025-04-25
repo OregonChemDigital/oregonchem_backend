@@ -7,7 +7,8 @@
     "dev": "nodemon app.js",
     "test": "node test-db.js",
     "deploy": "git push origin main",
-    "prepare-deploy": "npm run test"
+    "prepare-deploy": "npm run test",
+    "test:connections": "node src/tests/connectionTests.js"
   },
   "keywords": [],
   "author": "Gabriel Garcia-Miro Jeri",

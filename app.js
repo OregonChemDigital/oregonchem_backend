@@ -42,7 +42,10 @@ const allowedOrigins = [
   'https://oregonchem-backend.onrender.com',
   'https://oregonchem-dashboard.onrender.com',
   'https://quimicaindustrialpe.vercel.app',
-  'https://*.onrender.com'  // Allow all Render.com subdomains
+  'https://*.onrender.com',  // Allow all Render.com subdomains
+  'http://localhost:3000',
+  'https://oregonchem.tech',
+  'https://www.oregonchem.tech'
 ];
 
 console.log('Allowed CORS origins:', allowedOrigins);
@@ -74,13 +77,35 @@ app.use((req, res, next) => {
 });
 
 // Public health check endpoint
-app.get('/api/health', (req, res) => {
-  console.log('Health check requested');
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Check MongoDB connection
+    const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    
+    // Check Firebase Admin SDK
+    let firebaseStatus = 'disconnected';
+    try {
+      await admin.auth().listUsers(1);
+      firebaseStatus = 'connected';
+    } catch (error) {
+      console.error('Firebase connection check failed:', error);
+    }
+
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      services: {
+        mongodb: mongoStatus,
+        firebase: firebaseStatus
+      }
+    });
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
 });
 
 // Test endpoint for auth verification
