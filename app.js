@@ -55,6 +55,32 @@ app.options('*', cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Public health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Test endpoint for auth verification
+app.get('/api/test-auth', (req, res) => {
+  res.json({
+    message: 'This is a test endpoint. Use POST /auth/verify with an ID token to verify authentication.',
+    example: {
+      method: 'POST',
+      url: '/auth/verify',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: {
+        idToken: 'your-firebase-id-token'
+      }
+    }
+  });
+});
+
 // Routes
 app.use("/api", routes);
 app.use("/auth", authRouter);
@@ -62,11 +88,6 @@ app.post('/api/quotes', createQuote);
 app.get('/favicon.ico', (req, res) => res.status(204));
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/public/quotes', quoteRoutes);
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
