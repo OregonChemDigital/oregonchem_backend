@@ -20,10 +20,18 @@ const quoteRoutes = require('./src/routes/quoteRoutes');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Log environment
+console.log('Starting server with environment:', process.env.NODE_ENV || 'development');
+console.log('MongoDB URI:', process.env.MONGODB_URI_PROD ? 'Set' : 'Not set');
+console.log('Firebase Project ID:', process.env.FIREBASE_PROJECT_ID ? 'Set' : 'Not set');
+
 // Database connection
 mongoose.connect(process.env.MONGODB_URI_PROD)
 .then(() => console.log('Connected to MongoDB Production Database'))
-.catch(err => console.error('MongoDB connection error:', err));
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1); // Exit if database connection fails
+});
 
 // CORS configuration
 const allowedOrigins = [
@@ -37,11 +45,15 @@ const allowedOrigins = [
   'https://*.onrender.com'  // Allow all Render.com subdomains
 ];
 
+console.log('Allowed CORS origins:', allowedOrigins);
+
 const corsOptions = {
   origin: (origin, callback) => {
+    console.log('Incoming request from origin:', origin);
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log('CORS blocked request from:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -55,8 +67,15 @@ app.options('*', cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
 // Public health check endpoint
 app.get('/api/health', (req, res) => {
+  console.log('Health check requested');
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
@@ -66,6 +85,7 @@ app.get('/api/health', (req, res) => {
 
 // Test endpoint for auth verification
 app.get('/api/test-auth', (req, res) => {
+  console.log('Auth test endpoint requested');
   res.json({
     message: 'This is a test endpoint. Use POST /auth/verify with an ID token to verify authentication.',
     example: {
@@ -91,6 +111,7 @@ app.use('/api/public/quotes', quoteRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
+  console.error('Error:', err);
   const statusCode = err.statusCode || 500;
   res.status(statusCode).json({
     error: {
@@ -103,4 +124,9 @@ app.use((err, req, res, next) => {
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log('Environment variables check:');
+  console.log('- NODE_ENV:', process.env.NODE_ENV);
+  console.log('- PORT:', PORT);
+  console.log('- MONGODB_URI_PROD:', process.env.MONGODB_URI_PROD ? 'Set' : 'Not set');
+  console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? 'Set' : 'Not set');
 });
