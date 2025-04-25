@@ -21,10 +21,7 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI_PROD, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGODB_URI_PROD)
 .then(() => console.log('Connected to MongoDB Production Database'))
 .catch(err => console.error('MongoDB connection error:', err));
 
@@ -33,7 +30,11 @@ const allowedOrigins = [
   'http://localhost:4321',
   'http://localhost:5173',
   'http://localhost:5001',
-  'https://quimicaindustrialpe.com'
+  'https://quimicaindustrialpe.com',
+  'https://oregonchem-backend.onrender.com',
+  'https://oregonchem-dashboard.onrender.com',
+  'https://quimicaindustrialpe.vercel.app',
+  'https://*.onrender.com'  // Allow all Render.com subdomains
 ];
 
 const corsOptions = {
@@ -61,6 +62,11 @@ app.post('/api/quotes', createQuote);
 app.get('/favicon.ico', (req, res) => res.status(204));
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/public/quotes', quoteRoutes);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

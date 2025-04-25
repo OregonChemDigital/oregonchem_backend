@@ -1,22 +1,26 @@
 const express = require('express');
 const { google } = require('googleapis');
-const serviceAccount = require('./serviceAccountKey.json');
 const router = express.Router();
 const admin = require('firebase-admin');
 
 // Initialize Firebase Admin if it hasn't been initialized
 if (!admin.apps.length) {
     admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: process.env.FIREBASE_DATABASE_URL
+        credential: admin.credential.cert({
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+        }),
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
+        storageBucket: process.env.GOOGLE_CLOUD_STORAGE_BUCKET
     });
 }
 
 // Initialize Google Auth client with service account credentials
 const googleAuth = new google.auth.GoogleAuth({
     credentials: {
-        client_email: serviceAccount.client_email,
-        private_key: serviceAccount.private_key,
+        client_email: process.env.FIREBASE_CLIENT_EMAIL,
+        private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
     },
     scopes: [
         'https://www.googleapis.com/auth/analytics.readonly',

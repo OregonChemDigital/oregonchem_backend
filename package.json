@@ -4,7 +4,10 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "test": "node test-db.js",
+    "deploy": "git push origin main",
+    "prepare-deploy": "npm run test"
   },
   "keywords": [],
   "author": "Gabriel Garcia-Miro Jeri",
