@@ -4,7 +4,7 @@ const PresentationController = {
     // GET ALL PRESENTATIONS
     async getAllPresentations(req, res) {
         try {
-            const presentations = await Presentation.find().select('name type measure images');
+            const presentations = await Presentation.find().select('name type measure images createdAt updatedAt');
             res.status(200).json({ data: presentations });
         } catch (error) {
             res.status(500).json({ 
@@ -38,6 +38,7 @@ const PresentationController = {
                 type,
                 measure,
                 images,
+                createdAt: new Date()
             });
 
             await presentation.save();

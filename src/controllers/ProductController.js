@@ -6,6 +6,7 @@ const ProductController = {
         try {
             const { site } = req.query;
             const products = await Product.find()
+                .select('name presentations categories descriptions uses images createdAt updatedAt')
                 .populate({
                     path: 'presentations',
                     select: 'name type measure'
@@ -15,6 +16,13 @@ const ProductController = {
                     select: 'name'
                 })
                 .exec();
+
+            console.log('Raw products from database:', products.map(p => ({
+                _id: p._id,
+                name: p.name,
+                createdAt: p.createdAt,
+                updatedAt: p.updatedAt
+            })));
 
             const filteredProducts = products.map((product) => {
                 // If no site is specified, return all data
@@ -26,7 +34,9 @@ const ProductController = {
                         categories: product.categories || [],
                         descriptions: product.descriptions || {},
                         uses: product.uses || {},
-                        images: product.images || {}
+                        images: product.images || {},
+                        createdAt: product.createdAt,
+                        updatedAt: product.updatedAt
                     };
                 }
 
@@ -44,12 +54,22 @@ const ProductController = {
                     categories: product.categories || [],
                     descriptions: siteSpecificData.descriptions,
                     uses: siteSpecificData.uses,
-                    images: siteSpecificData.images
+                    images: siteSpecificData.images,
+                    createdAt: product.createdAt,
+                    updatedAt: product.updatedAt
                 };
             });
+
+            console.log('Filtered products being sent:', filteredProducts.map(p => ({
+                _id: p._id,
+                name: p.name,
+                createdAt: p.createdAt,
+                updatedAt: p.updatedAt
+            })));
+
             res.status(200).json({ data: filteredProducts });
         } catch (error) {
-            console.error('Error in getAllProducts:', error); // Debug log
+            console.error('Error in getAllProducts:', error);
             res.status(500).json({
                 message: "Error fetching products",
                 error: error.message
@@ -154,6 +174,59 @@ const ProductController = {
         } catch (error) {
             res.status(500).json({
                 message: "Error searching products",
+                error: error.message
+            });
+        }
+    },
+
+    // UPDATE A PRODUCT
+    async updateProduct(req, res) {
+        try {
+            const { id } = req.params;
+            const { name, presentations, categories, descriptions, uses } = req.body;
+
+            if (!name || !presentations || !categories) {
+                return res.status(400).json({
+                    message: "Missing required fields: name, presentations, categories"
+                });
+            }
+
+            const images = {};
+            ["site1", "site2", "site3", "site4", "site5"].forEach((site, index) => {
+                const imageFile = req.files ? req.files[`images[site${index + 1}]`] : null;
+                if (imageFile && imageFile.length > 0) {
+                    images[site] = imageFile[0].downloadURL;
+                }
+            });
+
+            const updateData = {
+                name,
+                presentations,
+                categories,
+                descriptions,
+                uses,
+                ...(Object.keys(images).length > 0 && { images })
+            };
+
+            const updatedProduct = await Product.findByIdAndUpdate(
+                id,
+                updateData,
+                { new: true }
+            ).populate('presentations categories');
+
+            if (!updatedProduct) {
+                return res.status(404).json({
+                    message: "Product not found"
+                });
+            }
+
+            res.status(200).json({ 
+                message: "Product updated successfully",
+                data: updatedProduct 
+            });
+        } catch (error) {
+            res.status(500).json({
+                message: "Error updating product",
                 error: error.message
             });
         }

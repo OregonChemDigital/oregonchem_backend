@@ -41,6 +41,7 @@ router.use(authMiddleware);
 router.get('/productos', ProductController.getAllProducts);
 router.get('/productos/:id/:site', ProductController.getProductByIdAndSite);
 router.post('/productos/nuevo', productUpload.fields(createProductUploadFields()), handleProductUploads, ProductController.createProduct);
+router.put('/productos/:id', productUpload.fields(createProductUploadFields()), handleProductUploads, ProductController.updateProduct);
 router.get('/search', ProductController.searchProducts);
 
 // Categories
