@@ -48,33 +48,40 @@ const allowedOrigins = [
   'https://www.oregonchem.tech'
 ];
 
-console.log('Allowed CORS origins:', allowedOrigins);
-
-const corsOptions = {
-  origin: (origin, callback) => {
+// Enhanced CORS configuration
+app.use(cors({
+  origin: function (origin, callback) {
+    // Log the incoming request origin
     console.log('Incoming request from origin:', origin);
+    
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) {
       console.log('Allowing request with no origin');
       return callback(null, true);
     }
-    if (allowedOrigins.includes(origin)) {
-      console.log('Origin allowed:', origin);
+    
+    // Check if the origin is in the allowed list
+    if (allowedOrigins.some(allowedOrigin => {
+      if (allowedOrigin.includes('*')) {
+        // Handle wildcard domains
+        const regex = new RegExp('^' + allowedOrigin.replace('*', '.*') + '$');
+        return regex.test(origin);
+      }
+      return allowedOrigin === origin;
+    })) {
+      console.log('Allowing request from:', origin);
       return callback(null, true);
     }
-    console.log('CORS blocked request from:', origin);
-    callback(new Error('Not allowed by CORS'));
+    
+    console.log('Blocking request from:', origin);
+    return callback(new Error('Not allowed by CORS'));
   },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 600 // Cache preflight requests for 10 minutes
-};
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
 
 // Middleware
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
