@@ -50,3 +50,4 @@ dist/
 *.tgz
 *.zip
 *.backuporegonchem_dashboard/
+oregonchem_dashboard/
