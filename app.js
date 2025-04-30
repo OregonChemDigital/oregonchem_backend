@@ -53,15 +53,23 @@ console.log('Allowed CORS origins:', allowedOrigins);
 const corsOptions = {
   origin: (origin, callback) => {
     console.log('Incoming request from origin:', origin);
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log('CORS blocked request from:', origin);
-      callback(new Error('Not allowed by CORS'));
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      console.log('Allowing request with no origin');
+      return callback(null, true);
     }
+    if (allowedOrigins.includes(origin)) {
+      console.log('Origin allowed:', origin);
+      return callback(null, true);
+    }
+    console.log('CORS blocked request from:', origin);
+    callback(new Error('Not allowed by CORS'));
   },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 600 // Cache preflight requests for 10 minutes
 };
 
 // Middleware
@@ -79,6 +87,8 @@ app.use((req, res, next) => {
 // Public health check endpoint
 app.get('/api/health', async (req, res) => {
   try {
+    console.log('Health check requested from origin:', req.headers.origin);
+    
     // Check MongoDB connection
     const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
     
@@ -91,19 +101,28 @@ app.get('/api/health', async (req, res) => {
       console.error('Firebase connection check failed:', error);
     }
 
-    res.json({
+    const response = {
       status: 'ok',
       timestamp: new Date().toISOString(),
       services: {
         mongodb: mongoStatus,
         firebase: firebaseStatus
+      },
+      environment: {
+        node_env: process.env.NODE_ENV,
+        port: process.env.PORT,
+        cors_origins: allowedOrigins
       }
-    });
+    };
+
+    console.log('Health check response:', response);
+    res.json(response);
   } catch (error) {
     console.error('Health check failed:', error);
     res.status(500).json({
       status: 'error',
-      error: error.message
+      error: error.message,
+      timestamp: new Date().toISOString()
     });
   }
 });
