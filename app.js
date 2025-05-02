@@ -45,7 +45,9 @@ const allowedOrigins = [
   'https://*.onrender.com',  // Allow all Render.com subdomains
   'http://localhost:3000',
   'https://oregonchem.tech',
-  'https://www.oregonchem.tech'
+  'https://www.oregonchem.tech',
+  'https://*.github.io',  // Allow all GitHub Pages domains
+  'https://ggmj92.github.io'  // Specific GitHub Pages domain
 ];
 
 // Enhanced CORS configuration
