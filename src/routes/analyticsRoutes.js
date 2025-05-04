@@ -157,45 +157,73 @@ router.get('/:siteId/overview', async (req, res) => {
         }
 
         if (!site.propertyId) {
-            return res.status(400).json({ message: `Google Analytics Property ID for ${site.name} is not configured` });
+            console.error(`Google Analytics Property ID for ${site.name} is not configured`);
+            return res.status(400).json({ 
+                message: `Google Analytics Property ID for ${site.name} is not configured`,
+                details: 'Please check your environment variables and ensure GOOGLE_ANALYTICS_PROPERTY_ID_QUIMICAINDUSTRIAL is set'
+            });
         }
 
-        const data = await fetchAnalyticsData(site.propertyId);
-        
-        const totalSessions = data.rows.reduce((sum, row) => sum + parseInt(row.metricValues[0].value), 0);
-        const totalPageViews = data.rows.reduce((sum, row) => sum + parseInt(row.metricValues[2].value), 0);
-        const todayData = data.rows[data.rows.length - 1];
-        
-        const homepageViews = data.rows.reduce((sum, row) => {
-            if (row.dimensionValues[0].value.includes('homepage')) {
-                return sum + parseInt(row.metricValues[2].value);
+        try {
+            const data = await fetchAnalyticsData(site.propertyId);
+            
+            if (!data || !data.rows || data.rows.length === 0) {
+                return res.status(200).json({
+                    siteName: site.name,
+                    totalSessions: 0,
+                    todaySessions: 0,
+                    activeUsers: 0,
+                    totalPageViews: 0,
+                    todayPageViews: 0,
+                    conversionRate: 0,
+                    mostViewedProduct: 'No data available',
+                    mostQuotedProduct: 'No data available'
+                });
             }
-            return sum;
-        }, 0);
-        
-        const quoteSubmissions = data.rows.reduce((sum, row) => {
-            if (row.dimensionValues[0].value.includes('quote_form_submission')) {
-                return sum + parseInt(row.metricValues[0].value);
-            }
-            return sum;
-        }, 0);
-        
-        const conversionRate = homepageViews > 0 ? ((quoteSubmissions / homepageViews) * 100).toFixed(2) : 0;
+            
+            const totalSessions = data.rows.reduce((sum, row) => sum + parseInt(row.metricValues[0].value), 0);
+            const totalPageViews = data.rows.reduce((sum, row) => sum + parseInt(row.metricValues[2].value), 0);
+            const todayData = data.rows[data.rows.length - 1];
+            
+            const homepageViews = data.rows.reduce((sum, row) => {
+                if (row.dimensionValues[0].value.includes('homepage')) {
+                    return sum + parseInt(row.metricValues[2].value);
+                }
+                return sum;
+            }, 0);
+            
+            const quoteSubmissions = data.rows.reduce((sum, row) => {
+                if (row.dimensionValues[0].value.includes('quote_form_submission')) {
+                    return sum + parseInt(row.metricValues[0].value);
+                }
+                return sum;
+            }, 0);
+            
+            const conversionRate = homepageViews > 0 ? ((quoteSubmissions / homepageViews) * 100).toFixed(2) : 0;
 
-        res.json({
-            siteName: site.name,
-            totalSessions,
-            todaySessions: todayData.metricValues[0].value,
-            activeUsers: todayData.metricValues[1].value,
-            totalPageViews,
-            todayPageViews: todayData.metricValues[2].value,
-            conversionRate,
-            mostViewedProduct: 'Product A',
-            mostQuotedProduct: 'Product B'
-        });
+            res.json({
+                siteName: site.name,
+                totalSessions,
+                todaySessions: todayData.metricValues[0].value,
+                activeUsers: todayData.metricValues[1].value,
+                totalPageViews,
+                todayPageViews: todayData.metricValues[2].value,
+                conversionRate,
+                mostViewedProduct: 'Product A',
+                mostQuotedProduct: 'Product B'
+            });
+        } catch (error) {
+            console.error('Error fetching analytics data:', error);
+            return res.status(500).json({ 
+                message: 'Error fetching analytics data', 
+                error: error.message,
+                details: 'Please check your Google Analytics configuration and ensure the service account has the necessary permissions'
+            });
+        }
     } catch (error) {
+        console.error('Unexpected error:', error);
         res.status(500).json({ 
-            message: 'Error fetching analytics data', 
+            message: 'Unexpected error occurred', 
             error: error.message
         });
     }
