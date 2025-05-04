@@ -38,6 +38,7 @@ const allowedOrigins = [
   'http://localhost:4321',
   'http://localhost:5173',
   'http://localhost:5001',
+  'http://localhost:10000',
   'https://quimicaindustrialpe.com',
   'https://oregonchem-backend.onrender.com',
   'https://oregonchem-dashboard.onrender.com',
