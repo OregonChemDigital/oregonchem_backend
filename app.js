@@ -40,6 +40,7 @@ const allowedOrigins = [
   'http://localhost:5001',
   'http://localhost:10000',
   'https://quimicaindustrialpe.com',
+  'https://www.quimicaindustrialpe.com',
   'https://oregonchem-backend.onrender.com',
   'https://oregonchem-dashboard.onrender.com',
   'https://quimicaindustrialpe.vercel.app',
@@ -63,6 +64,12 @@ app.use(cors({
       return callback(null, true);
     }
     
+    // Special handling for dashboard domain
+    if (origin === 'https://oregonchem-dashboard.onrender.com') {
+      console.log('Allowing request from dashboard');
+      return callback(null, true);
+    }
+    
     // Check if the origin is in the allowed list
     if (allowedOrigins.some(allowedOrigin => {
       if (allowedOrigin.includes('*')) {
@@ -76,13 +83,24 @@ app.use(cors({
       return callback(null, true);
     }
     
+    // For development, allow all origins
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Development mode: allowing all origins');
+      return callback(null, true);
+    }
+    
     console.log('Blocking request from:', origin);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With', 'Access-Control-Allow-Origin'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400 // Cache preflight requests for 24 hours
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Middleware
 app.use(bodyParser.json());
