@@ -5,7 +5,7 @@ const multerStorage = multer.memoryStorage();
 
 const upload = multer({
     storage: multerStorage,
-    limits: { fileSize: 1024 * 1024 * 3 }, // 3 MB limit
+    limits: { fileSize: 1024 * 1024 * 10 }, // 10 MB limit
 });
 
 const handlePresentationUploads = async (req, res, next) => {
