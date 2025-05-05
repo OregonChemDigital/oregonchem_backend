@@ -19,11 +19,16 @@ const uploadFileToFirebase = async (file, path) => {
         const jpgPath = path.replace(/\.[^/.]+$/, '.jpg');
 
         const jpgBuffer = await sharp(file.buffer)
+            .resize(1920, null, {
+                withoutEnlargement: true,
+                fit: 'inside'
+            })
             .jpeg({ 
-                quality: 80,
+                quality: 70,
                 progressive: true,
                 optimizeCoding: true,
-                mozjpeg: true
+                mozjpeg: true,
+                chromaSubsampling: '4:2:0'
             })
             .toBuffer();
 
