@@ -19,7 +19,7 @@ const uploadFileToFirebase = async (file, path) => {
         const jpgPath = path.replace(/\.[^/.]+$/, '.jpg');
 
         // Process image in chunks to reduce memory usage
-        const jpgBuffer = await sharp(file.buffer)
+        const processedBuffer = await sharp(file.buffer)
             .resize(1920, null, {
                 withoutEnlargement: true,
                 fit: 'inside'
@@ -37,7 +37,7 @@ const uploadFileToFirebase = async (file, path) => {
         file.buffer = null;
 
         const storageRef = ref(storage, jpgPath);
-        const uploadTask = uploadBytesResumable(storageRef, jpgBuffer);
+        const uploadTask = uploadBytesResumable(storageRef, processedBuffer);
 
         return new Promise((resolve, reject) => {
             uploadTask.on(
@@ -47,8 +47,6 @@ const uploadFileToFirebase = async (file, path) => {
                 async () => {
                     try {
                         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                        // Clear the processed buffer to free memory
-                        jpgBuffer = null;
                         resolve(downloadURL);
                     } catch (error) {
                         reject(new Error(`Failed to get download URL: ${error.message}`));
