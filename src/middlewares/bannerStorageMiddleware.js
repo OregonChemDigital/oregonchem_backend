@@ -6,26 +6,10 @@ const multerStorage = multer.memoryStorage();
 const upload = multer({
     storage: multerStorage,
     limits: { fileSize: 1024 * 1024 * 10 }, // 10 MB limit
-}).single('image');
+});
 
 const handleBannerUploads = async (req, res, next) => {
-    upload(req, res, async function(err) {
-        if (err instanceof multer.MulterError) {
-            // A Multer error occurred when uploading
-            console.error('Multer error:', err);
-            if (err.code === 'LIMIT_FILE_SIZE') {
-                return res.status(400).json({ 
-                    message: "File is too large. Please compress the image or choose a smaller one.",
-                    maxSize: "10MB"
-                });
-            }
-            return res.status(400).json({ message: err.message });
-        } else if (err) {
-            // An unknown error occurred
-            console.error('Unknown error:', err);
-            return res.status(500).json({ message: err.message });
-        }
-
+    try {
         console.log('Banner upload request received:', {
             body: req.body,
             file: req.file ? {
@@ -72,7 +56,14 @@ const handleBannerUploads = async (req, res, next) => {
                 details: error.stack
             });
         }
-    });
+    } catch (error) {
+        console.error("Error in handleBannerUploads:", error);
+        return res.status(500).json({ 
+            message: "Error processing banner upload", 
+            error: error.message,
+            details: error.stack
+        });
+    }
 };
 
 module.exports = { upload, handleBannerUploads };

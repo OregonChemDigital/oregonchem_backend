@@ -13,7 +13,7 @@ const QuoteController = require('../controllers/QuoteController');
 const { handleProductUploads, upload: productUpload } = require('../middlewares/productStorageMiddleware');
 const { handleCategoryUploads, upload: categoryUpload } = require('../middlewares/categoryStorageMiddleware');
 const { handlePresentationUploads, upload: presentationUpload } = require('../middlewares/presentationStorageMiddleware');
-const { upload, handleBannerUploads } = require('../middlewares/bannerStorageMiddleware');
+const { upload: bannerUpload, handleBannerUploads } = require('../middlewares/bannerStorageMiddleware');
 
 // Utils
 const createUploadFields = require('../utils/createUploadFields');
@@ -55,7 +55,7 @@ router.delete('/presentaciones/:id', PresentationController.deletePresentation);
 
 // Banners
 router.get('/banners', BannerController.getAllBanners);
-router.post('/banners/nuevo', upload.single('image'), handleBannerUploads, BannerController.addBanner);
+router.post('/banners/nuevo', bannerUpload.single('image'), handleBannerUploads, BannerController.addBanner);
 
 // Analytics
 router.use('/analytics', require('./analyticsRoutes'));
