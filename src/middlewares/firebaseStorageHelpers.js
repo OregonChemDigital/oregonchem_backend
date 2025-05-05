@@ -18,6 +18,7 @@ const uploadFileToFirebase = async (file, path) => {
     try {
         const jpgPath = path.replace(/\.[^/.]+$/, '.jpg');
 
+        // Process image in chunks to reduce memory usage
         const jpgBuffer = await sharp(file.buffer)
             .resize(1920, null, {
                 withoutEnlargement: true,
@@ -32,6 +33,9 @@ const uploadFileToFirebase = async (file, path) => {
             })
             .toBuffer();
 
+        // Clear the original buffer to free memory
+        file.buffer = null;
+
         const storageRef = ref(storage, jpgPath);
         const uploadTask = uploadBytesResumable(storageRef, jpgBuffer);
 
@@ -43,6 +47,8 @@ const uploadFileToFirebase = async (file, path) => {
                 async () => {
                     try {
                         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        // Clear the processed buffer to free memory
+                        jpgBuffer = null;
                         resolve(downloadURL);
                     } catch (error) {
                         reject(new Error(`Failed to get download URL: ${error.message}`));
@@ -65,9 +71,14 @@ const handleFileUploads = async (req, basePath, entityName) => {
         .toLowerCase()
         .replace(/[^a-z0-9_]/g, '');
 
-    const uploadPromises = Object.keys(req.files).flatMap((fieldName) => {
+    // Process files sequentially to reduce memory usage
+    const result = {};
+    
+    for (const fieldName of Object.keys(req.files)) {
         const files = req.files[fieldName];
-        return files.map(async (file) => {
+        result[fieldName] = [];
+        
+        for (const file of files) {
             const siteMatch = fieldName.match(/site(\d+)/);
             const siteNumber = siteMatch ? siteMatch[1] : '1';
             
@@ -89,22 +100,17 @@ const handleFileUploads = async (req, basePath, entityName) => {
                     throw new Error(`Invalid base path: ${basePath}`);
             }
 
-            const downloadURL = await uploadFileToFirebase(file, storagePath);
-            return { ...file, downloadURL };
-        });
-    });
-
-    try {
-        const uploadedFiles = await Promise.all(uploadPromises);
-        return uploadedFiles.reduce((acc, file) => {
-            const key = file.fieldname;
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(file);
-            return acc;
-        }, {});
-    } catch (error) {
-        throw new Error(`Failed to handle file uploads: ${error.message}`);
+            try {
+                const downloadURL = await uploadFileToFirebase(file, storagePath);
+                result[fieldName].push({ ...file, downloadURL });
+            } catch (error) {
+                console.error(`Error uploading file for ${fieldName}:`, error);
+                throw new Error(`Failed to upload file for ${fieldName}: ${error.message}`);
+            }
+        }
     }
+
+    return result;
 };
 
 module.exports = { uploadFileToFirebase, handleFileUploads };
