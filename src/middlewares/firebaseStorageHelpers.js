@@ -15,17 +15,18 @@ const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 
 const uploadFileToFirebase = async (file, path) => {
+    let processedBuffer = null;
     try {
         const jpgPath = path.replace(/\.[^/.]+$/, '.jpg');
 
-        // Process image in chunks to reduce memory usage
-        const processedBuffer = await sharp(file.buffer)
-            .resize(1920, null, {
+        // Process image with more aggressive compression
+        processedBuffer = await sharp(file.buffer)
+            .resize(1280, null, { // Reduced from 1920 to 1280
                 withoutEnlargement: true,
                 fit: 'inside'
             })
             .jpeg({ 
-                quality: 70,
+                quality: 60, // Reduced from 70 to 60
                 progressive: true,
                 optimizeCoding: true,
                 mozjpeg: true,
@@ -33,8 +34,13 @@ const uploadFileToFirebase = async (file, path) => {
             })
             .toBuffer();
 
-        // Clear the original buffer to free memory
+        // Clear the original buffer immediately
         file.buffer = null;
+
+        // Force garbage collection if available
+        if (global.gc) {
+            global.gc();
+        }
 
         const storageRef = ref(storage, jpgPath);
         const uploadTask = uploadBytesResumable(storageRef, processedBuffer);
@@ -43,18 +49,26 @@ const uploadFileToFirebase = async (file, path) => {
             uploadTask.on(
                 "state_changed",
                 null,
-                reject,
+                (error) => {
+                    processedBuffer = null;
+                    reject(error);
+                },
                 async () => {
                     try {
                         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        processedBuffer = null;
                         resolve(downloadURL);
                     } catch (error) {
+                        processedBuffer = null;
                         reject(new Error(`Failed to get download URL: ${error.message}`));
                     }
                 }
             );
         });
     } catch (error) {
+        if (processedBuffer) {
+            processedBuffer = null;
+        }
         throw new Error(`Failed to process image: ${error.message}`);
     }
 };
@@ -69,9 +83,9 @@ const handleFileUploads = async (req, basePath, entityName) => {
         .toLowerCase()
         .replace(/[^a-z0-9_]/g, '');
 
-    // Process files sequentially to reduce memory usage
     const result = {};
     
+    // Process one file at a time
     for (const fieldName of Object.keys(req.files)) {
         const files = req.files[fieldName];
         result[fieldName] = [];
@@ -99,8 +113,10 @@ const handleFileUploads = async (req, basePath, entityName) => {
             }
 
             try {
+                console.log(`Processing file for ${fieldName}...`);
                 const downloadURL = await uploadFileToFirebase(file, storagePath);
                 result[fieldName].push({ ...file, downloadURL });
+                console.log(`Successfully processed file for ${fieldName}`);
             } catch (error) {
                 console.error(`Error uploading file for ${fieldName}:`, error);
                 throw new Error(`Failed to upload file for ${fieldName}: ${error.message}`);
