@@ -6,7 +6,7 @@ const ProductController = {
         try {
             const { site } = req.query;
             const products = await Product.find()
-                .select('name presentations categories descriptions uses images createdAt updatedAt')
+                .select('name presentations categories frontends descriptions uses images seo createdAt updatedAt')
                 .populate({
                     path: 'presentations',
                     select: 'name type measure'
@@ -20,6 +20,7 @@ const ProductController = {
             console.log('Raw products from database:', products.map(p => ({
                 _id: p._id,
                 name: p.name,
+                frontends: p.frontends,
                 createdAt: p.createdAt,
                 updatedAt: p.updatedAt
             })));
@@ -30,39 +31,49 @@ const ProductController = {
                     return {
                         _id: product._id,
                         name: product.name,
+                        frontends: product.frontends || [],
                         presentations: product.presentations || [],
                         categories: product.categories || [],
                         descriptions: product.descriptions || {},
                         uses: product.uses || {},
                         images: product.images || {},
+                        seo: product.seo || {},
                         createdAt: product.createdAt,
                         updatedAt: product.updatedAt
                     };
                 }
 
-                // If site is specified, return site-specific data
+                // If site is specified, only return data if the product is available for that site
+                if (!product.frontends.includes(site)) {
+                    return null;
+                }
+
                 const siteSpecificData = {
-                    descriptions: product.descriptions?.[site] || product.descriptions?.site1 || "",
-                    uses: product.uses?.[site] || product.uses?.site1 || "",
-                    images: product.images?.[site] || product.images?.site1 || ""
+                    descriptions: product.descriptions?.[site] || "",
+                    uses: product.uses?.[site] || "",
+                    images: product.images?.[site] || "",
+                    seo: product.seo?.[site] || {}
                 };
 
                 return {
                     _id: product._id,
                     name: product.name,
+                    frontends: product.frontends,
                     presentations: product.presentations || [],
                     categories: product.categories || [],
                     descriptions: siteSpecificData.descriptions,
                     uses: siteSpecificData.uses,
                     images: siteSpecificData.images,
+                    seo: siteSpecificData.seo,
                     createdAt: product.createdAt,
                     updatedAt: product.updatedAt
                 };
-            });
+            }).filter(Boolean); // Remove null entries
 
             console.log('Filtered products being sent:', filteredProducts.map(p => ({
                 _id: p._id,
                 name: p.name,
+                frontends: p.frontends,
                 createdAt: p.createdAt,
                 updatedAt: p.updatedAt
             })));
@@ -77,31 +88,44 @@ const ProductController = {
         }
     },
 
-
     // ADD A PRODUCT
     async createProduct(req, res) {
         try {
-            const { name, presentations, categories, descriptions, uses } = req.body;
+            const { name, presentations, categories, frontends, descriptions, uses } = req.body;
 
-            if (!name || !presentations || !categories) {
+            if (!name || !presentations || !categories || !frontends) {
                 return res.status(400).json({
-                    message: "Missing required fields: name, presentations, categories"
+                    message: "Missing required fields: name, presentations, categories, frontends"
                 });
             }
 
             const images = {};
-            ["site1", "site2", "site3", "site4", "site5"].forEach((site, index) => {
-                const imageFile = req.files ? req.files[`images[site${index + 1}]`] : null;
+            const seo = {};
+
+            frontends.forEach(site => {
+                const imageFile = req.files ? req.files[`images[${site}]`] : null;
                 images[site] = imageFile && imageFile.length > 0 ? imageFile[0].downloadURL : "";
+
+                // Process SEO data
+                const siteUses = uses[site] || "";
+                const keywords = siteUses.split(',').map(k => k.trim()).filter(k => k);
+                
+                seo[site] = {
+                    title: name,
+                    description: descriptions[site] || "",
+                    keywords: keywords
+                };
             });
 
             const newProduct = new Product({
                 name,
                 presentations,
                 categories,
+                frontends,
                 descriptions,
                 uses,
                 images,
+                seo
             });
 
             const savedProduct = await newProduct.save();
@@ -125,10 +149,17 @@ const ProductController = {
                 return res.status(404).json({ message: "Product not found" });
             }
 
+            if (!product.frontends.includes(site)) {
+                return res.status(404).json({
+                    message: "Product not available for the requested site"
+                });
+            }
+
             const siteData = {
                 descriptions: product.descriptions[site],
                 uses: product.uses[site],
-                images: product.images[site]
+                images: product.images[site],
+                seo: product.seo[site]
             };
 
             if (!siteData.descriptions && !siteData.uses && !siteData.images) {
@@ -139,11 +170,13 @@ const ProductController = {
 
             res.status(200).json({
                 name: product.name,
+                frontends: product.frontends,
                 presentations: product.presentations,
                 categories: product.categories,
                 descriptions: siteData.descriptions,
                 uses: siteData.uses,
                 images: siteData.images,
+                seo: siteData.seo
             });
         } catch (error) {
             res.status(500).json({
@@ -156,19 +189,26 @@ const ProductController = {
     // SEARCH PRODUCTS BY NAME
     async searchProducts(req, res) {
         try {
-            const { searchTerm } = req.query;
+            const { searchTerm, site } = req.query;
             if (!searchTerm) {
                 return res.status(400).json({
                     message: "Search term is required"
                 });
             }
 
-            const products = await Product.find({
+            const query = {
                 $or: [
                     { name: { $regex: searchTerm, $options: 'i' } },
-                    { description: { $regex: searchTerm, $options: 'i' } }
+                    { description: { $regex: searchTerm, $options: 'i' } },
+                    { 'seo.keywords': { $in: [new RegExp(searchTerm, 'i')] } }
                 ]
-            }).populate('categories');
+            };
+
+            if (site) {
+                query.frontends = site;
+            }
+
+            const products = await Product.find(query).populate('categories');
 
             res.status(200).json({ data: products });
         } catch (error) {
@@ -183,28 +223,42 @@ const ProductController = {
     async updateProduct(req, res) {
         try {
             const { id } = req.params;
-            const { name, presentations, categories, descriptions, uses } = req.body;
+            const { name, presentations, categories, frontends, descriptions, uses } = req.body;
 
-            if (!name || !presentations || !categories) {
+            if (!name || !presentations || !categories || !frontends) {
                 return res.status(400).json({
-                    message: "Missing required fields: name, presentations, categories"
+                    message: "Missing required fields: name, presentations, categories, frontends"
                 });
             }
 
             const images = {};
-            ["site1", "site2", "site3", "site4", "site5"].forEach((site, index) => {
-                const imageFile = req.files ? req.files[`images[site${index + 1}]`] : null;
+            const seo = {};
+
+            frontends.forEach(site => {
+                const imageFile = req.files ? req.files[`images[${site}]`] : null;
                 if (imageFile && imageFile.length > 0) {
                     images[site] = imageFile[0].downloadURL;
                 }
+
+                // Process SEO data
+                const siteUses = uses[site] || "";
+                const keywords = siteUses.split(',').map(k => k.trim()).filter(k => k);
+                
+                seo[site] = {
+                    title: name,
+                    description: descriptions[site] || "",
+                    keywords: keywords
+                };
             });
 
             const updateData = {
                 name,
                 presentations,
                 categories,
+                frontends,
                 descriptions,
                 uses,
+                seo,
                 ...(Object.keys(images).length > 0 && { images })
             };
 

@@ -5,6 +5,12 @@ const siteSchema = {
     default: ""
 };
 
+const seoSchema = {
+    title: { type: String, default: "" },
+    description: { type: String, default: "" },
+    keywords: { type: [String], default: [] }
+};
+
 const ProductSchema = new mongoose.Schema(
     {
         name: { 
@@ -22,6 +28,12 @@ const ProductSchema = new mongoose.Schema(
             ref: "Category",
             required: [true, "At least one category is required"]
         }],
+        frontends: {
+            type: [String],
+            enum: ['site1', 'site2', 'site3', 'site4', 'site5'],
+            default: ['site1'],
+            required: [true, "At least one frontend must be selected"]
+        },
         descriptions: {
             site1: siteSchema,
             site2: siteSchema,
@@ -42,6 +54,13 @@ const ProductSchema = new mongoose.Schema(
             site3: siteSchema,
             site4: siteSchema,
             site5: siteSchema
+        },
+        seo: {
+            site1: seoSchema,
+            site2: seoSchema,
+            site3: seoSchema,
+            site4: seoSchema,
+            site5: seoSchema
         }
     },
     { 
