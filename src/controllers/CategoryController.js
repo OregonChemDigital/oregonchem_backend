@@ -43,10 +43,12 @@ const CategoryController = {
             }
 
             const images = {};
-            for (let i = 1; i <= 5; i++) {
-                const imageFile = req.files[`images[site${i}]`];
-                if (imageFile && imageFile[0]) {
-                    images[`site${i}`] = imageFile[0].downloadURL;
+            if (req.files) {
+                for (let i = 1; i <= 5; i++) {
+                    const imageFile = req.files[`images[site${i}]`];
+                    if (imageFile && imageFile[0]) {
+                        images[`site${i}`] = imageFile[0].downloadURL;
+                    }
                 }
             }
 
@@ -62,8 +64,81 @@ const CategoryController = {
     },
 
     // UPDATE A CATEGORY
+    async updateCategory(req, res) {
+        try {
+            const { id } = req.params;
+            const { name, frontends, descriptions } = req.body;
+
+            if (!name || !frontends) {
+                return res.status(400).json({
+                    message: "Missing required fields: name, frontends"
+                });
+            }
+
+            const images = {};
+
+            frontends.forEach(site => {
+                const imageFile = req.files ? req.files[`images[${site}]`] : null;
+                // Only update image if a new one is provided
+                if (imageFile && imageFile.length > 0) {
+                    images[site] = imageFile[0].downloadURL;
+                }
+            });
+
+            const updateData = {
+                name,
+                frontends,
+                descriptions,
+                ...(Object.keys(images).length > 0 && { images })
+            };
+
+            const updatedCategory = await Category.findByIdAndUpdate(
+                id,
+                updateData,
+                { new: true }
+            );
+
+            if (!updatedCategory) {
+                return res.status(404).json({
+                    message: "Category not found"
+                });
+            }
+
+            res.status(200).json({ 
+                message: "Category updated successfully",
+                data: updatedCategory 
+            });
+        } catch (error) {
+            res.status(500).json({
+                message: "Error updating category",
+                error: error.message
+            });
+        }
+    },
 
     // DELETE A CATEGORY
+    async deleteCategory(req, res) {
+        try {
+            const { id } = req.params;
+            const category = await Category.findById(id);
+
+            if (!category) {
+                return res.status(404).json({ 
+                    message: "Category not found" 
+                });
+            }
+
+            await Category.findByIdAndDelete(id);
+            res.status(200).json({ 
+                message: "Category deleted successfully" 
+            });
+        } catch (error) {
+            res.status(500).json({ 
+                message: "Error deleting category", 
+                error: error.message 
+            });
+        }
+    },
 };
 
 module.exports = CategoryController;

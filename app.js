@@ -41,6 +41,8 @@ const allowedOrigins = [
   'http://localhost:10000',
   'https://quimicaindustrialpe.com',
   'https://www.quimicaindustrialpe.com',
+  'https://quimica.pe',
+  'https://www.quimica.pe',
   'https://oregonchem-backend.onrender.com',
   'https://oregonchem-dashboard.onrender.com',
   'https://quimicaindustrialpe.vercel.app',

@@ -13,7 +13,8 @@ const publicPaths = [
 ];
 
 const authMiddleware = async (req, res, next) => {
-    if (publicPaths.includes(req.originalUrl)) {
+    // Check if the path starts with any of the public paths
+    if (publicPaths.some(path => req.originalUrl.startsWith(path))) {
         return next();
     }
 

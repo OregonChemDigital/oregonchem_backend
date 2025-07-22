@@ -10,7 +10,7 @@ const upload = multer({
 
 const handleCategoryUploads = async (req, res, next) => {
     const { name } = req.body;
-    if (!req.files) return next();
+    if (!req.files) req.files = {};
     if (!name) return res.status(400).json({ message: "Category name is required" });
 
     try {

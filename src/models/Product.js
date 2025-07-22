@@ -5,6 +5,12 @@ const siteSchema = {
     default: ""
 };
 
+const priceSchema = {
+    type: Number,
+    min: 0,
+    default: null
+};
+
 const seoSchema = {
     title: { type: String, default: "" },
     description: { type: String, default: "" },
@@ -54,6 +60,13 @@ const ProductSchema = new mongoose.Schema(
             site3: siteSchema,
             site4: siteSchema,
             site5: siteSchema
+        },
+        prices: {
+            site1: priceSchema,
+            site2: priceSchema,
+            site3: priceSchema,
+            site4: priceSchema,
+            site5: priceSchema
         },
         seo: {
             site1: seoSchema,

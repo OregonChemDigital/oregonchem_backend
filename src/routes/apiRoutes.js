@@ -42,20 +42,27 @@ router.get('/productos', ProductController.getAllProducts);
 router.get('/productos/:id/:site', ProductController.getProductByIdAndSite);
 router.post('/productos/nuevo', productUpload.fields(createProductUploadFields()), handleProductUploads, ProductController.createProduct);
 router.put('/productos/:id', productUpload.fields(createProductUploadFields()), handleProductUploads, ProductController.updateProduct);
+router.delete('/productos/:id', ProductController.deleteProduct);
+
+// Search
 router.get('/search', ProductController.searchProducts);
 
 // Categories
 router.get('/categorias', CategoryController.getAllCategories);
 router.post('/categorias/nueva', categoryUpload.fields(createUploadFields(sites)), handleCategoryUploads, CategoryController.addCategory);
+router.put('/categorias/:id', categoryUpload.fields(createUploadFields(sites)), handleCategoryUploads, CategoryController.updateCategory);
+router.delete('/categorias/:id', CategoryController.deleteCategory);
 
 // Presentations
 router.get('/presentaciones', PresentationController.getAllPresentations);
 router.post('/presentaciones/nueva', presentationUpload.fields(createUploadFields(sites)), handlePresentationUploads, PresentationController.addPresentation);
+router.put('/presentaciones/:id', presentationUpload.fields(createUploadFields(sites)), handlePresentationUploads, PresentationController.updatePresentation);
 router.delete('/presentaciones/:id', PresentationController.deletePresentation);
 
 // Banners
 router.get('/banners', BannerController.getAllBanners);
 router.post('/banners/nuevo', bannerUpload.single('image'), handleBannerUploads, BannerController.addBanner);
+router.delete('/banners/:id', BannerController.deleteBanner);
 
 // Analytics
 router.use('/analytics', require('./analyticsRoutes'));

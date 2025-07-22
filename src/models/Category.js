@@ -13,6 +13,19 @@ const CategorySchema = new mongoose.Schema(
             unique: true,
             trim: true
         },
+        frontends: {
+            type: [String],
+            enum: ['site1', 'site2', 'site3', 'site4', 'site5'],
+            default: ['site1'],
+            required: [true, "At least one frontend must be selected"]
+        },
+        descriptions: {
+            site1: siteSchema,
+            site2: siteSchema,
+            site3: siteSchema,
+            site4: siteSchema,
+            site5: siteSchema
+        },
         images: {
             site1: siteSchema,
             site2: siteSchema,

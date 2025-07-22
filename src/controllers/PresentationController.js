@@ -26,10 +26,12 @@ const PresentationController = {
             }
 
             const images = {};
-            for (let i = 1; i <= 5; i++) {
-                const imageFile = req.files[`images[site${i}]`];
-                if (imageFile && imageFile[0]) {
-                    images[`site${i}`] = imageFile[0].downloadURL;
+            if (req.files) {
+                for (let i = 1; i <= 5; i++) {
+                    const imageFile = req.files[`images[site${i}]`];
+                    if (imageFile && imageFile[0]) {
+                        images[`site${i}`] = imageFile[0].downloadURL;
+                    }
                 }
             }
 
@@ -47,6 +49,61 @@ const PresentationController = {
             res.status(500).json({ 
                 message: "Error adding presentation", 
                 error: error.message 
+            });
+        }
+    },
+
+    // UPDATE A PRESENTATION
+    async updatePresentation(req, res) {
+        try {
+            const { id } = req.params;
+            const { name, type, measure, frontends, descriptions } = req.body;
+
+            if (!name || !type || !frontends) {
+                return res.status(400).json({
+                    message: "Missing required fields: name, type, frontends"
+                });
+            }
+
+            const images = {};
+
+            frontends.forEach(site => {
+                const imageFile = req.files ? req.files[`images[${site}]`] : null;
+                // Only update image if a new one is provided
+                if (imageFile && imageFile.length > 0) {
+                    images[site] = imageFile[0].downloadURL;
+                }
+            });
+
+            const updateData = {
+                name,
+                type,
+                measure,
+                frontends,
+                descriptions,
+                ...(Object.keys(images).length > 0 && { images })
+            };
+
+            const updatedPresentation = await Presentation.findByIdAndUpdate(
+                id,
+                updateData,
+                { new: true }
+            );
+
+            if (!updatedPresentation) {
+                return res.status(404).json({
+                    message: "Presentation not found"
+                });
+            }
+
+            res.status(200).json({ 
+                message: "Presentation updated successfully",
+                data: updatedPresentation 
+            });
+        } catch (error) {
+            res.status(500).json({
+                message: "Error updating presentation",
+                error: error.message
             });
         }
     },
