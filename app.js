@@ -13,7 +13,6 @@ const routes = require("./src/routes/apiRoutes");
 const authRouter = require("./src/routes/authRoutes");
 
 // const analyticsRoutes = require('./src/routes/analyticsRoutes'); // Temporarily disabled due to Firebase config issues
-const aiProductRoutes = require('./src/routes/aiProductRoutes');
 const aiImageRoutes = require('./src/routes/aiImageRoutes');
 const { admin, mainApp, analyticsApp } = require(path.resolve(__dirname, 'src/config/firebaseAdminInit'));
 const { createQuote } = require(path.resolve(__dirname, 'src/controllers/QuoteController'));
@@ -198,7 +197,6 @@ app.post('/api/quotes', createQuote);
 app.get('/favicon.ico', (req, res) => res.status(204));
 // app.use('/api/analytics', analyticsRoutes); // Temporarily disabled due to Firebase config issues
 app.use('/api/public/quotes', quoteRoutes);
-app.use('/api/productos/ai', aiProductRoutes);
 app.use('/api/ai-images', aiImageRoutes);
 
 // Error handling middleware
