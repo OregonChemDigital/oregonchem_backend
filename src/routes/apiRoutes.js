@@ -55,8 +55,8 @@ router.delete('/categorias/:id', CategoryController.deleteCategory);
 
 // Presentations
 router.get('/presentaciones', PresentationController.getAllPresentations);
-router.post('/presentaciones/nueva', presentationUpload.fields(createUploadFields(sites)), handlePresentationUploads, PresentationController.addPresentation);
-router.put('/presentaciones/:id', presentationUpload.fields(createUploadFields(sites)), handlePresentationUploads, PresentationController.updatePresentation);
+router.post('/presentaciones/nueva', PresentationController.addPresentation);
+router.put('/presentaciones/:id', PresentationController.updatePresentation);
 router.delete('/presentaciones/:id', PresentationController.deletePresentation);
 
 // Banners

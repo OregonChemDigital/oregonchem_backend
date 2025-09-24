@@ -11,8 +11,11 @@ dotenv.config();
 // Import routes and configurations
 const routes = require("./src/routes/apiRoutes");
 const authRouter = require("./src/routes/authRoutes");
-const analyticsRoutes = require('./src/routes/analyticsRoutes');
-const { admin, bucket, auth } = require(path.resolve(__dirname, 'src/config/firebaseAdmin'));
+
+// const analyticsRoutes = require('./src/routes/analyticsRoutes'); // Temporarily disabled due to Firebase config issues
+const aiProductRoutes = require('./src/routes/aiProductRoutes');
+const aiImageRoutes = require('./src/routes/aiImageRoutes');
+const { admin, mainApp, analyticsApp } = require(path.resolve(__dirname, 'src/config/firebaseAdminInit'));
 const { createQuote } = require(path.resolve(__dirname, 'src/controllers/QuoteController'));
 const { Product } = require('./src/models/Product');
 const quoteRoutes = require('./src/routes/quoteRoutes');
@@ -39,6 +42,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5001',
   'http://localhost:10000',
+  'http://192.168.0.22:4321', // Your machine's IP for iPhone access
+  'http://192.168.0.22:5001', // Your machine's IP for backend
   'https://quimicaindustrialpe.com',
   'https://www.quimicaindustrialpe.com',
   'https://quimica.pe',
@@ -104,9 +109,20 @@ app.use(cors({
 // Handle preflight requests
 app.options('*', cors());
 
-// Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Middleware - Configure body parser with larger limits for base64 images
+app.use(bodyParser.json({ 
+  limit: '50mb',
+  type: 'application/json'
+}));
+app.use(bodyParser.urlencoded({ 
+  extended: true, 
+  limit: '50mb',
+  type: 'application/x-www-form-urlencoded'
+}));
+app.use(bodyParser.text({ 
+  limit: '50mb',
+  type: 'text/plain'
+}));
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -125,7 +141,7 @@ app.get('/api/health', async (req, res) => {
     // Check Firebase Admin SDK
     let firebaseStatus = 'disconnected';
     try {
-      await admin.auth().listUsers(1);
+      await mainApp.auth().listUsers(1);
       firebaseStatus = 'connected';
     } catch (error) {
       console.error('Firebase connection check failed:', error);
@@ -180,8 +196,10 @@ app.use("/api", routes);
 app.use("/auth", authRouter);
 app.post('/api/quotes', createQuote);
 app.get('/favicon.ico', (req, res) => res.status(204));
-app.use('/api/analytics', analyticsRoutes);
+// app.use('/api/analytics', analyticsRoutes); // Temporarily disabled due to Firebase config issues
 app.use('/api/public/quotes', quoteRoutes);
+app.use('/api/productos/ai', aiProductRoutes);
+app.use('/api/ai-images', aiImageRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -196,8 +214,11 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Server accessible at:`);
+  console.log(`- Local: http://localhost:${PORT}`);
+  console.log(`- Network: http://192.168.0.22:${PORT}`);
   console.log('Environment variables check:');
   console.log('- NODE_ENV:', process.env.NODE_ENV);
   console.log('- PORT:', PORT);

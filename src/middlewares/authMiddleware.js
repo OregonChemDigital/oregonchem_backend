@@ -1,4 +1,4 @@
-const { admin } = require("../config/firebaseAdmin");
+const { mainApp } = require("../config/firebaseAdminInit");
 
 const publicPaths = [
     '/',
@@ -28,7 +28,7 @@ const authMiddleware = async (req, res, next) => {
 
     const idToken = authorizationHeader.split("Bearer ")[1];
     try {
-        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const decodedToken = await mainApp.auth().verifyIdToken(idToken);
         
         if (decodedToken.exp < Date.now() / 1000) {
             return res.status(401).json({ 

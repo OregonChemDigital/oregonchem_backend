@@ -4,7 +4,7 @@ const PresentationController = {
     // GET ALL PRESENTATIONS
     async getAllPresentations(req, res) {
         try {
-            const presentations = await Presentation.find().select('name type measure images createdAt updatedAt');
+            const presentations = await Presentation.find().select('name promptText templateImage createdAt updatedAt');
             res.status(200).json({ data: presentations });
         } catch (error) {
             res.status(500).json({ 
@@ -17,29 +17,32 @@ const PresentationController = {
     // ADD ONE PRESENTATION
     async addPresentation(req, res) {
         try {
-            const { name, type, measure } = req.body;
+            const { name, promptText, templateImage } = req.body;
 
-            if (!name || !type || !measure) {
+            console.log('Received presentation data:', {
+                name: name,
+                promptTextLength: promptText?.length || 0,
+                templateImageLength: templateImage?.length || 0,
+                hasName: !!name,
+                hasPromptText: !!promptText,
+                hasTemplateImage: !!templateImage
+            });
+
+            if (!name || !promptText || !templateImage) {
+                console.log('Validation failed:', {
+                    name: !!name,
+                    promptText: !!promptText,
+                    templateImage: !!templateImage
+                });
                 return res.status(400).json({ 
-                    message: "Name, type, and measure are required" 
+                    message: "Name, prompt text, and template image are required" 
                 });
             }
 
-            const images = {};
-            if (req.files) {
-                for (let i = 1; i <= 5; i++) {
-                    const imageFile = req.files[`images[site${i}]`];
-                    if (imageFile && imageFile[0]) {
-                        images[`site${i}`] = imageFile[0].downloadURL;
-                    }
-                }
-            }
-
             const presentation = new Presentation({
-                name,
-                type,
-                measure,
-                images,
+                name: name.trim(),
+                promptText: promptText.trim(),
+                templateImage,
                 createdAt: new Date()
             });
 

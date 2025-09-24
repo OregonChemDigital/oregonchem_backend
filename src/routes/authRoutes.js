@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { auth } = require('../config/firebaseAdmin');
+const { mainApp } = require('../config/firebaseAdminInit');
 
 router.post('/verify', async (req, res) => {
     console.log('Auth verification requested');
@@ -16,7 +16,7 @@ router.post('/verify', async (req, res) => {
 
     try {
         console.log('Verifying ID token...');
-        const decodedToken = await auth.verifyIdToken(idToken);
+        const decodedToken = await mainApp.auth().verifyIdToken(idToken);
         console.log('Token verified successfully for user:', decodedToken.uid);
         res.json({ uid: decodedToken.uid });
     } catch (error) {

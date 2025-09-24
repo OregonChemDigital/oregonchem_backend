@@ -82,7 +82,7 @@ router.get('/analytics', async (req, res) => {
 
 module.exports = {
     admin,
-    auth: admin.auth(),
+    auth: () => admin.auth(),
     googleAuth,
     analyticsDataClient,
     router,
